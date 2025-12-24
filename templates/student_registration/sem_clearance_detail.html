@@ -1,0 +1,138 @@
+
+<!-- templates/students/clearance_detail.html -->
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Clearance Summary - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h4 mb-1">
+                <i class="fas fa-user-graduate text-primary me-2"></i> Clearance Summary
+            </h2>
+            <p class="text-muted mb-0">
+                <strong>Student:</strong> {{ student.name }}<br>
+                <strong>Access Number:</strong> <code class="bg-light px-2 py-1 rounded">{{ access_number.access_number }}</code>
+            </p>
+        </div>
+        <div class="btn-group" role="group" aria-label="Clearance Actions">
+            <a href="{% url 'pass_book:finance_clearance' access_number.access_number %}" class="btn btn-outline-primary">
+                <i class="fas fa-money-bill-wave me-1"></i> Edit Finance
+            </a>
+            <a href="{% url 'pass_book:academic_clearance' access_number.access_number %}" class="btn btn-outline-info">
+                <i class="fas fa-graduation-cap me-1"></i> Edit Academic
+            </a>
+            <a href="{% url 'pass_book:delete_clearance' access_number.access_number %}"
+               class="btn btn-outline-danger"
+               onclick="return confirm('Are you sure you want to permanently delete this clearance record?');">
+                <i class="fas fa-trash-alt me-1"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <!-- Finance Clearance Card -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-hand-holding-usd text-success me-2"></i> Finance Clearance
+                    </h5>
+                    {% if clearance.finance_cleared %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle me-1"></i> Cleared
+                        </span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">
+                            <i class="fas fa-exclamation-triangle me-1"></i> Pending
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><strong>Cleared:</strong> {{ clearance.finance_cleared|yesno:"Yes,No" }}</li>
+                        <li class="mb-2"><strong>Officer:</strong> {{ clearance.finance_officer_name }} 
+                            {% if clearance.finance_officer_designation %}
+                                ({{ clearance.finance_officer_designation }})
+                            {% endif %}
+                        </li>
+                        <li class="mb-2"><strong>Date:</strong> 
+                            {% if clearance.finance_clearance_date %}
+                                {{ clearance.finance_clearance_date|date:"M j, Y" }}
+                            {% else %}
+                                <em class="text-muted">Not set</em>
+                            {% endif %}
+                        </li>
+                    </ul>
+
+                    {% if clearance.finance_signature %}
+                        <div class="mt-3 text-center">
+                            <img src="{{ clearance.finance_signature.url }}" 
+                                 alt="Finance Officer Signature" 
+                                 class="img-fluid border rounded p-2 bg-light"
+                                 style="max-height: 150px; max-width: 200px;">
+                            <p class="mt-2 text-muted small">Officer's Signature</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Clearance Card -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-book-open text-info me-2"></i> Academic Clearance
+                    </h5>
+                    {% if clearance.academic_cleared %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle me-1"></i> Cleared
+                        </span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">
+                            <i class="fas fa-exclamation-triangle me-1"></i> Pending
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><strong>Cleared:</strong> {{ clearance.academic_cleared|yesno:"Yes,No" }}</li>
+                        <li class="mb-2"><strong>Officer:</strong> {{ clearance.academic_officer_name }} 
+                            {% if clearance.academic_officer_designation %}
+                                ({{ clearance.academic_officer_designation }})
+                            {% endif %}
+                        </li>
+                        <li class="mb-2"><strong>Date:</strong> 
+                            {% if clearance.academic_clearance_date %}
+                                {{ clearance.academic_clearance_date|date:"M j, Y" }}
+                            {% else %}
+                                <em class="text-muted">Not set</em>
+                            {% endif %}
+                        </li>
+                    </ul>
+
+                    {% if clearance.academic_signature %}
+                        <div class="mt-3 text-center">
+                            <img src="{{ clearance.academic_signature.url }}" 
+                                 alt="Academic Officer Signature" 
+                                 class="img-fluid border rounded p-2 bg-light"
+                                 style="max-height: 150px; max-width: 200px;">
+                            <p class="mt-2 text-muted small">Officer's Signature</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <a href="{% url 'pass_book:clearance_list' %}" class="btn btn-link text-decoration-none">
+            <i class="fas fa-arrow-left me-1"></i> Back to Clearance Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+

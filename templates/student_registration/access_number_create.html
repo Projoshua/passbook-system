@@ -1,0 +1,136 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Generate New Access Number - Student Passbook{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="mb-2">
+                <i class="fas fa-key me-3"></i>Generate New Access Number
+            </h1>
+            <p class="text-muted mb-0">Create a new access number for student registration</p>
+        </div>
+        <div>
+            <a href="{% url 'pass_book:access_number_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card card-custom">
+    <div class="card-header bg-light">
+        <h5 class="card-title mb-0">Access Number Details</h5>
+    </div>
+    <div class="card-body">
+       <!-- student_registration/access_number_create.html -->
+        <form method="post">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>Create Semester Access Number</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        {{ form.student.label_tag }}
+                        {{ form.student }}
+                        {% if form.student.errors %}
+                            <div class="text-danger">{{ form.student.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        {{ form.academic_year.label_tag }}
+                        {{ form.academic_year }}
+                        {% if form.academic_year.errors %}
+                            <div class="text-danger">{{ form.academic_year.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        {{ form.semester.label_tag }}
+                        {{ form.semester }}
+                        {% if form.semester.errors %}
+                            <div class="text-danger">{{ form.semester.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        {{ form.year_of_study.label_tag }}
+                        {{ form.year_of_study }}
+                        {% if form.year_of_study.errors %}
+                            <div class="text-danger">{{ form.year_of_study.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <strong>Note:</strong> The access number will be automatically generated in the format:
+                <code>SLAU-YYYY-S{semester}-{program_code}-{student_number}</code>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Generate Access Number</button>
+            <a href="{% url 'pass_book:access_number_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+        </form>
+    </div>
+</div>
+
+<div class="mt-4">
+    <div class="card card-custom">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">How Access Numbers Work</h5>
+        </div>
+        <div class="card-body">
+            <p>Access numbers are automatically generated using the following format:</p>
+            <div class="alert alert-info">
+                <strong>SLAU-YYYY-S{semester}-{reg_no_suffix}-{sequence}</strong><br>
+                Example: SLAU-2024-S1-001-00123
+            </div>
+            <ul>
+                <li><strong>SLAU</strong> - Institution code</li>
+                <li><strong>YYYY</strong> - Academic year (first part)</li>
+                <li><strong>S{semester}</strong> - Semester number</li>
+                <li><strong>{reg_no_suffix}</strong> - Last 3 digits of student registration number</li>
+                <li><strong>{sequence}</strong> - Sequential number for the semester</li>
+            </ul>
+            <p class="mb-0">The access number serves as the primary linking key for all student activities in a given academic period.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+})()
+</script>
+{% endblock %}
+
+

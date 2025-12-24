@@ -1,0 +1,268 @@
+<!-- templates/student_registration/student_course_units_list.html -->
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Manage Course Units - {{ access_number.access_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Navigation Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'pass_book:select_student' %}">Select Student</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ access_number.access_number }}</li>
+    </ol>
+  </nav>
+
+  <!-- Student Profile Card -->
+  <div class="card shadow-lg border-0 rounded-4 mb-4 overflow-hidden">
+    <div class="bg-primary text-white p-4">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h2 class="mb-1 fw-bold">{{ access_number.student.name }}</h2>
+          <p class="mb-0 opacity-90">
+            <strong>Reg No:</strong> {{ access_number.student.registration_number }} |
+            <strong>Access:</strong> <code>{{ access_number.access_number }}</code>
+          </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <span class="badge bg-light text-primary fs-5 px-3 py-2">
+            <i class="bi bi-journal-text"></i>
+            {{ course_units.count }} Course Unit{{ course_units.count|pluralize }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body bg-light">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <strong><i class="bi bi-building"></i> Faculty:</strong>
+          {{ access_number.student.program.faculty }}
+        </div>
+        <div class="col-md-6">
+          <strong><i class="bi bi-award"></i> Programme:</strong>
+          {{ access_number.student.program.name }}
+        </div>
+        <div class="col-md-6">
+          <strong><i class="bi bi-calendar"></i> Duration:</strong>
+          {{ access_number.student.program.duration }} years
+        </div>
+        <div class="col-md-6">
+          <strong><i class="bi bi-flag"></i> Expected Graduation:</strong>
+          {{ access_number.student.expected_graduation_year|default:"N/A" }}
+        </div>
+        <div class="col-md-6">
+          <strong><i class="bi bi-globe"></i> Nationality:</strong>
+          {{ access_number.student.nationality }}
+        </div>
+        <div class="col-md-6">
+          <strong><i class="bi bi-telephone"></i> Contact:</strong>
+          {{ access_number.student.student_contact }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle"></i> {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Action Buttons -->
+  <div class="mb-3 d-flex gap-2 flex-wrap">
+    <a href="{% url 'pass_book:student_course_units_manage' access_number.access_number %}" 
+       class="btn btn-primary">
+      <i class="bi bi-gear"></i> Manage Course Units
+    </a>
+    <a href="{% url 'pass_book:student_course_unit_add' access_number.pk %}" 
+       class="btn btn-success">
+      <i class="bi bi-plus-circle"></i> Add Single Course Unit
+    </a>
+    <a href="{% url 'pass_book:student_course_units_bulk' access_number.pk %}" 
+       class="btn btn-info">
+      <i class="bi bi-files"></i> Bulk Add Course Units
+    </a>
+  </div>
+
+  <!-- Registered Course Units Table -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center rounded-top">
+      <h5 class="mb-0"><i class="bi bi-book-fill"></i> Registered Course Units</h5>
+      <span class="badge bg-secondary">{{ course_units.count }}</span>
+    </div>
+    <div class="card-body p-0">
+      {% if course_units %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th width="10%">Code</th>
+                <th width="25%">Title</th>
+                <th width="10%">Status</th>
+                <th width="8%">Certified</th>
+                <th width="15%">HOD Name</th>
+                <th width="15%">Department</th>
+                <th width="10%">Date</th>
+                <th width="7%">Signature</th>
+                <th width="10%">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cu in course_units %}
+                <tr>
+                  <td><code>{{ cu.course_unit.code }}</code></td>
+                  <td>{{ cu.course_unit.title }}</td>
+                  <td>
+                    <span class="badge rounded-pill
+                      {% if cu.status == 'PASSED' %}bg-success
+                      {% elif cu.status == 'RETAKE' %}bg-warning text-dark
+                      {% elif cu.status == 'MISSED' %}bg-danger
+                      {% else %}bg-secondary{% endif %}">
+                      {{ cu.get_status_display|default:"Pending" }}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    {% if cu.hod_certified %}
+                      <i class="bi bi-check-circle-fill text-success" title="Certified"></i>
+                    {% else %}
+                      <i class="bi bi-x-circle-fill text-muted" title="Not Certified"></i>
+                    {% endif %}
+                  </td>
+                  <td>{{ cu.hod_name|default:"—" }}</td>
+                  <td>{{ cu.hod_department|default:"—" }}</td>
+                  <td>{{ cu.hod_certification_date|date:"Y-m-d"|default:"—" }}</td>
+                  <td>
+                    {% if cu.hod_signature %}
+                      <a href="{{ cu.hod_signature.url }}" target="_blank" title="View HOD Signature">
+                        <img src="{{ cu.hod_signature.url }}" alt="HOD Signature" width="40" class="rounded border shadow-sm">
+                      </a>
+                    {% else %}
+                      <small class="text-muted">—</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <a href="{% url 'pass_book:student_course_unit_update' cu.pk %}" 
+                         class="btn btn-outline-warning" 
+                         title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-journal-x display-4 opacity-50"></i>
+          <p class="mt-3 fs-5">No course units registered yet.</p>
+          <a href="{% url 'pass_book:student_course_unit_add' access_number.pk %}" 
+             class="btn btn-primary mt-2">
+            <i class="bi bi-plus-circle"></i> Add First Course Unit
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Bulk Add Formset -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-success text-white">
+      <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Add New Course Units</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle">
+            <thead class="table-light">
+              <tr>
+                <th width="18%">Course Unit</th>
+                <th width="10%">Status</th>
+                <th width="8%">Certified?</th>
+                <th width="12%">HOD Name</th>
+                <th width="12%">Designation</th>
+                <th width="12%">Department</th>
+                <th width="10%">Date</th>
+                <th width="10%">Signature</th>
+                <th width="8%">Remove?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{ formset.management_form }}
+              {% for form in formset %}
+                <tr>
+                  {% for field in form.visible_fields %}
+                    <td>
+                      {{ field }}
+                      {% if field.errors %}
+                        <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> {{ field.errors|join:", " }}</div>
+                      {% endif %}
+                    </td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success px-4">
+            <i class="bi bi-save"></i> Save Course Units
+          </button>
+          <a href="{% url 'pass_book:select_student' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Student Selection
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Prevent Duplicate Selection in Course Unit Dropdowns -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const selects = document.querySelectorAll("select[name$='course_unit']");
+
+    const updateSelectOptions = () => {
+      // Reset all options
+      selects.forEach(s => {
+        Array.from(s.options).forEach(opt => {
+          opt.disabled = false;
+        });
+      });
+
+      // Get selected values (excluding empty)
+      const selected = Array.from(selects)
+        .map(s => s.value)
+        .filter(val => val);
+
+      // Disable selected options in other dropdowns
+      selects.forEach(s => {
+        Array.from(s.options).forEach(opt => {
+          if (opt.value && selected.includes(opt.value) && opt.value !== s.value) {
+            opt.disabled = true;
+          }
+        });
+      });
+    };
+
+    // Attach change listeners
+    selects.forEach(s => {
+      s.addEventListener("change", updateSelectOptions);
+    });
+
+    // Run on load
+    updateSelectOptions();
+  });
+</script>
+
+{% endblock %}

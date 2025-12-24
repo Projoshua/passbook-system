@@ -1,0 +1,115 @@
+
+<!-- student_registration/registrar_recommend_form.html -->
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Registrar Recommendation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="bi bi-award"></i> Registrar Recommendation</h2>
+        <a href="{% url 'pass_book:dead_semester_detail' application.pk %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back to Application
+        </a>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>Student:</strong> {{ application.student.name }}<br>
+        <strong>Access No:</strong> {{ application.student.static_access_number }}
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="card p-4 shadow-sm">
+        {% csrf_token %}
+
+        <!-- Registrar Recommended Checkbox -->
+        <div class="mb-3 form-check">
+            <input type="checkbox" 
+                   class="form-check-input" 
+                   id="registrar_recommended" 
+                   name="registrar_recommended"
+                   {% if posted_data and posted_data.registrar_recommended == 'on' %}checked{% endif %}>
+            <label class="form-check-label" for="registrar_recommended">
+                <strong>I, Registrar, recommend this application</strong>
+            </label>
+        </div>
+
+        <!-- Registrar Name -->
+        <div class="mb-3">
+            <label for="registrar_name" class="form-label">Registrar Name <span class="text-danger">*</span></label>
+            <input type="text" 
+                   class="form-control" 
+                   id="registrar_name" 
+                   name="registrar_name"
+                   value="{{ posted_data.registrar_name|default:'' }}" 
+                   placeholder="e.g., Dr. Jane Smith"
+                   required>
+        </div>
+
+        <!-- Designation -->
+        <div class="mb-3">
+            <label for="registrar_designation" class="form-label">Designation <span class="text-danger">*</span></label>
+            <input type="text" 
+                   class="form-control" 
+                   id="registrar_designation" 
+                   name="registrar_designation"
+                   value="{{ posted_data.registrar_designation|default:'' }}" 
+                   placeholder="e.g., University Registrar"
+                   required>
+        </div>
+
+        <!-- Department -->
+        <div class="mb-3">
+            <label for="registrar_department" class="form-label">Department <span class="text-danger">*</span></label>
+            <input type="text" 
+                   class="form-control" 
+                   id="registrar_department" 
+                   name="registrar_department"
+                   value="{{ posted_data.registrar_department|default:'' }}" 
+                   placeholder="e.g., Academic Affairs"
+                   required>
+        </div>
+
+        <!-- Date -->
+        <div class="mb-3">
+            <label for="registrar_date" class="form-label">Recommendation Date <span class="text-danger">*</span></label>
+            <input type="date" 
+                   class="form-control" 
+                   id="registrar_date" 
+                   name="registrar_date"
+                   value="{{ posted_data.registrar_date|default:'' }}" 
+                   required>
+        </div>
+
+        <!-- Signature Upload -->
+        <div class="mb-3">
+            <label for="registrar_signature" class="form-label">Upload Signature (optional)</label>
+            <input type="file" 
+                   class="form-control" 
+                   id="registrar_signature" 
+                   name="registrar_signature"
+                   accept="image/*">
+            {% if application.registrar_signature %}
+                <div class="mt-2">
+                    <small class="text-muted">Current signature:</small><br>
+                    <img src="{{ application.registrar_signature.url }}" 
+                         alt="Registrar Signature" 
+                         class="img-fluid border p-2 bg-light rounded" 
+                         style="max-height: 100px; max-width: 200px;">
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <button type="submit" class="btn btn-success px-4">
+                <i class="bi bi-save"></i> Save Registrar Recommendation
+            </button>
+            <a href="{% url 'pass_book:dead_semester_detail' application.pk %}" class="btn btn-secondary px-4">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,39 @@
+
+<!-- templates/course_work/course_work_confirm_delete.html -->
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete - Course Work{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm border-danger">
+    <div class="card-header bg-danger text-white">
+      <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirm Deletion</h5>
+    </div>
+    <div class="card-body">
+      <p>Are you sure you want to delete the following course work entry?</p>
+
+      <div class="alert alert-info">
+        <strong>Course Work:</strong> {{ object.course_work.title }}<br>
+        <strong>Course Unit:</strong> {{ object.course_work.course_unit.code }} - {{ object.course_work.course_unit.title }}<br>
+        <strong>Status:</strong> {{ object.get_status_display }}<br>
+        <strong>Submitted:</strong> {{ object.submission_date|default:"Not set" }}
+      </div>
+
+      <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">
+          <i class="bi bi-trash"></i> Yes, Delete
+        </button>
+        <a href="{% url 'pass_book:course_work_detail' access_number:object.access_number.access_number %}" class="btn btn-secondary">
+          <i class="bi bi-x-circle"></i> Cancel
+        </a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

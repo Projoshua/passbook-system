@@ -1,0 +1,102 @@
+
+{% extends 'student_registration/base.html' %}  <!-- or your base template name -->
+
+{% block title %}Select Student for Association Management{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h3><i class="fas fa-users-cog me-2"></i> Select Student for Association Management</h3>
+    <a href="{% url 'pass_book:association_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Back to Associations
+    </a>
+</div>
+
+<div class="card card-custom mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-10">
+                <input type="text"
+                       name="q"
+                       class="form-control form-control-lg"
+                       placeholder="Search by Access Number, Student Name, or ID..."
+                       value="{{ query }}"
+                       autofocus>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-search me-1"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if access_numbers %}
+    <div class="card card-custom">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Search Results ({{ access_numbers.count }})</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-custom mb-0">
+                    <thead>
+                        
+                        <tr>
+    <th>Semester Code</th>
+    <th>Student Name</th>
+    <th>Student Number</th>  <!-- ✅ NEW -->
+    <th>Program</th>
+    <th>Year/Semester</th>
+    <th>Actions</th>
+</tr>
+                    </thead>
+                    <tbody>
+                        {% for an in access_numbers %}
+                       
+                        <tr>
+    <td><strong>{{ an.access_number }}</strong></td>
+    <td>{{ an.student.name }}</td>
+    <td>{{ an.student.student_number }}</td>  <!-- ✅ NEW -->
+    <td>{{ an.student.program.name }}</td>
+    <td>Y{{ an.year_of_study }} / {{ an.semester.name }}</td>
+    <td>
+        <a href="?access_number={{ an.access_number }}"
+           class="btn btn-sm btn-outline-primary"
+           title="Manage Associations for {{ an.student.name }}">
+            <i class="fas fa-users-cog me-1"></i> Manage Associations
+        </a>
+    </td>
+</tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">No students found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% elif query %}
+    <div class="alert alert-warning alert-custom text-center">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        No students match your search: <strong>"{{ query }}"</strong>
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Focus search box on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('input[name="q"]');
+        if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+        }
+    });
+</script>
+{% endblock %}
+
+

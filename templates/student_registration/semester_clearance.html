@@ -1,0 +1,543 @@
+<!-- templates/semester_clearance.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semester Clearance - {{ academic_year.year_label }} - Semester {{ semester.number }}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        .clearance-card {
+            border-left: 5px solid;
+            margin-bottom: 15px;
+        }
+        .cleared {
+            border-left-color: #28a745;
+            background-color: #f8fff9;
+        }
+        .pending {
+            border-left-color: #ffc107;
+            background-color: #fffdf6;
+        }
+        .ineligible {
+            border-left-color: #dc3545;
+            background-color: #fff6f6;
+        }
+        .status-badge {
+            font-size: 0.8em;
+            padding: 3px 8px;
+        }
+        .progress-sm {
+            height: 8px;
+        }
+        .student-photo {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        .details-row {
+            background-color: #f8f9fa;
+        }
+        .filter-card {
+            background-color: #f8f9fa;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .stat-card.total { background-color: #e3f2fd; }
+        .stat-card.cleared { background-color: #e8f5e9; }
+        .stat-card.pending { background-color: #fff3e0; }
+        .stat-card.eligible { background-color: #f3e5f5; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col">
+                <h2 class="text-primary">
+                    <i class="fas fa-clipboard-check"></i> Semester Clearance
+                </h2>
+                <h4 class="text-secondary">
+                    {{ academic_year.year_label }} - Semester {{ semester.number }}
+                </h4>
+                <p class="text-muted">Generated on: {{ current_date|date:"F d, Y" }}</p>
+            </div>
+            <div class="col-auto">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-print"></i> Reports
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'pass_book:clearance_summary_report' academic_year.id semester.id %}">
+                                <i class="fas fa-chart-bar"></i> Summary Report
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="window.print()">
+                                <i class="fas fa-print"></i> Print Current View
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card total">
+                    <h3>{{ total_students }}</h3>
+                    <p class="text-muted mb-0">Total Students</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card cleared">
+                    <h3>{{ fully_cleared }}</h3>
+                    <p class="text-muted mb-0">Fully Cleared</p>
+                    <small>{{ fully_cleared|floatformat:0 }}% of total</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card pending">
+                    <h3>{{ pending_clearance }}</h3>
+                    <p class="text-muted mb-0">Pending Clearance</p>
+                    <small>{{ pending_clearance|floatformat:0 }}% of total</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card eligible">
+                    <h3>{{ eligible_count }}</h3>
+                    <p class="text-muted mb-0">Eligible for Clearance</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card filter-card mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Clearance Status</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="pending" {% if filter_status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="cleared" {% if filter_status == 'cleared' %}selected{% endif %}>Fully Cleared</option>
+                            <option value="eligible" {% if filter_status == 'eligible' %}selected{% endif %}>Eligible</option>
+                            <option value="ineligible" {% if filter_status == 'ineligible' %}selected{% endif %}>Ineligible</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="program" class="form-label">Program</label>
+                        <select name="program" id="program" class="form-select">
+                            <option value="">All Programs</option>
+                            {% for program in programs %}
+                            <option value="{{ program.code }}" {% if filter_program == program.code %}selected{% endif %}>
+                                {{ program.code }} - {{ program.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="session" class="form-label">Session</label>
+                        <select name="session" id="session" class="form-select">
+                            <option value="">All Sessions</option>
+                            {% for session_code, session_name in sessions %}
+                            <option value="{{ session_code }}" {% if filter_session == session_code %}selected{% endif %}>
+                                {{ session_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter"></i> Apply Filters
+                        </button>
+                        <a href="{% url 'semester_clearance' %}" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-times"></i> Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Semester/Academic Year Selector -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i> Academic Year</span>
+                    <select id="academicYearSelect" class="form-select">
+                        {% for ay in academic_years %}
+                        <option value="{{ ay.id }}" 
+                            {% if ay.id == academic_year.id %}selected{% endif %}>
+                            {{ ay.year_label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-school"></i> Semester</span>
+                    <select id="semesterSelect" class="form-select">
+                        {% for sem in semesters %}
+                        <option value="{{ sem.id }}" 
+                            {% if sem.id == semester.id %}selected{% endif %}>
+                            Semester {{ sem.number }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Students List -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-users"></i> Students ({{ students_data|length }})
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="clearanceTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Student</th>
+                                <th>Access Number</th>
+                                <th>Program</th>
+                                <th>Clearance Status</th>
+                                <th>Requirements</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in students_data %}
+                            <tr class="{% if data.fully_cleared %}table-success{% elif not data.eligible_for_clearance %}table-danger{% endif %}">
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if data.student.student_photo %}
+                                        <img src="{{ data.student.student_photo.url }}" 
+                                             alt="{{ data.student.name }}" 
+                                             class="student-photo me-3">
+                                        {% else %}
+                                        <div class="student-photo me-3 bg-secondary text-white d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <strong>{{ data.student.name }}</strong><br>
+                                            <small class="text-muted">
+                                                {{ data.student.registration_number }}
+                                            </small><br>
+                                            <span class="badge bg-secondary">
+                                                {{ data.student.get_session_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <code>{{ data.access_number.access_number }}</code><br>
+                                    <small class="text-muted">Year {{ data.access_number.year_of_study }}</small>
+                                </td>
+                                <td>
+                                    {{ data.student.program.code }}<br>
+                                    <small class="text-muted">{{ data.student.program.name }}</small>
+                                </td>
+                                <td>
+                                    {% if data.fully_cleared %}
+                                    <span class="badge bg-success status-badge">
+                                        <i class="fas fa-check-circle"></i> Fully Cleared
+                                    </span>
+                                    {% elif data.finance_cleared or data.academic_cleared %}
+                                    <span class="badge bg-warning text-dark status-badge">
+                                        <i class="fas fa-exclamation-circle"></i> Partially Cleared
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-danger status-badge">
+                                        <i class="fas fa-times-circle"></i> Not Cleared
+                                    </span>
+                                    {% endif %}
+                                    
+                                    <div class="mt-2">
+                                        <small>
+                                            <i class="fas fa-coins {% if data.finance_cleared %}text-success{% else %}text-danger{% endif %}"></i>
+                                            Finance: 
+                                            {% if data.finance_cleared %}
+                                            <span class="text-success">Cleared</span>
+                                            {% else %}
+                                            <span class="text-danger">Pending</span>
+                                            {% endif %}
+                                        </small><br>
+                                        <small>
+                                            <i class="fas fa-graduation-cap {% if data.academic_cleared %}text-success{% else %}text-danger{% endif %}"></i>
+                                            Academic: 
+                                            {% if data.academic_cleared %}
+                                            <span class="text-success">Cleared</span>
+                                            {% else %}
+                                            <span class="text-danger">Pending</span>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <!-- Course Units -->
+                                    <div class="mb-1">
+                                        <small>Course Units:</small>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress progress-sm flex-grow-1 me-2">
+                                                <div class="progress-bar bg-info" 
+                                                     style="width: {{ data.course_unit_completion_rate }}%">
+                                                </div>
+                                            </div>
+                                            <small>{{ data.completed_course_units }}/{{ data.total_course_units }}</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Course Works -->
+                                    <div class="mb-1">
+                                        <small>Course Works:</small>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress progress-sm flex-grow-1 me-2">
+                                                <div class="progress-bar bg-primary" 
+                                                     style="width: {{ data.coursework_completion_rate }}%">
+                                                </div>
+                                            </div>
+                                            <small>{{ data.completed_course_works }}/{{ data.total_course_works }}</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Other Requirements -->
+                                    <div class="mt-2">
+                                        {% if data.medical_cleared %}
+                                        <span class="badge bg-success bg-opacity-25 text-success me-1" 
+                                              title="Medical Registration">
+                                            <i class="fas fa-heartbeat"></i> Medical
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-danger bg-opacity-25 text-danger me-1"
+                                              title="Medical Registration">
+                                            <i class="fas fa-heartbeat"></i> Medical
+                                        </span>
+                                        {% endif %}
+                                        
+                                        {% if data.nche_cleared %}
+                                        <span class="badge bg-success bg-opacity-25 text-success me-1"
+                                              title="NCHE Registration">
+                                            <i class="fas fa-file-invoice"></i> NCHE
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-danger bg-opacity-25 text-danger me-1"
+                                              title="NCHE Registration">
+                                            <i class="fas fa-file-invoice"></i> NCHE
+                                        </span>
+                                        {% endif %}
+                                        
+                                        {% if data.laptop_cleared %}
+                                        <span class="badge bg-success bg-opacity-25 text-success me-1"
+                                              title="Laptop Scheme">
+                                            <i class="fas fa-laptop"></i> Laptop
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-danger bg-opacity-25 text-danger me-1"
+                                              title="Laptop Scheme">
+                                            <i class="fas fa-laptop"></i> Laptop
+                                        </span>
+                                        {% endif %}
+                                        
+                                        {% if data.dead_semester_active %}
+                                        <span class="badge bg-warning text-dark me-1"
+                                              title="Dead Semester Active">
+                                            <i class="fas fa-pause-circle"></i> Dead Semester
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-primary" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#studentModal{{ forloop.counter }}">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        
+                                        {% if is_finance_officer or is_supervisor %}
+                                        <button type="button" class="btn btn-outline-success clearance-btn"
+                                                data-access="{{ data.access_number.access_number }}"
+                                                data-type="finance"
+                                                data-current="{{ data.finance_cleared|yesno:'true,false' }}">
+                                            <i class="fas fa-coins"></i> Finance
+                                        </button>
+                                        {% endif %}
+                                        
+                                        {% if is_academic_officer or is_supervisor %}
+                                        <button type="button" class="btn btn-outline-info clearance-btn"
+                                                data-access="{{ data.access_number.access_number }}"
+                                                data-type="academic"
+                                                data-current="{{ data.academic_cleared|yesno:'true,false' }}">
+                                            <i class="fas fa-graduation-cap"></i> Academic
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <!-- Student Details Modal -->
+                            <div class="modal fade" id="studentModal{{ forloop.counter }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">{{ data.student.name }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <!-- Student Details Content -->
+                                            {% include 'student_clearance_details.html' with data=data %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-users-slash fa-2x text-muted mb-3"></i>
+                                    <p>No students found for the selected criteria.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        // Initialize DataTable
+        $(document).ready(function() {
+            $('#clearanceTable').DataTable({
+                pageLength: 25,
+                order: [[4, 'asc']], // Sort by clearance status
+                language: {
+                    search: "Search students:"
+                }
+            });
+        });
+        
+        // Academic Year/Semester Change
+        $('#academicYearSelect, #semesterSelect').change(function() {
+            const academicYearId = $('#academicYearSelect').val();
+            const semesterId = $('#semesterSelect').val();
+            window.location.href = `/semester-clearance/${academicYearId}/${semesterId}/`;
+        });
+        
+        // Clearance Status Update
+        $('.clearance-btn').click(function() {
+            const accessNumber = $(this).data('access');
+            const clearanceType = $(this).data('type');
+            const currentStatus = $(this).data('current');
+            const newStatus = !currentStatus;
+            
+            const btn = $(this);
+            const icon = btn.find('i');
+            
+            // Show loading
+            icon.removeClass().addClass('fas fa-spinner fa-spin');
+            btn.prop('disabled', true);
+            
+            // Send AJAX request
+            $.ajax({
+                url: '/update-clearance-status/' + accessNumber + '/',
+                type: 'POST',
+                data: {
+                    [clearanceType + '_cleared']: newStatus.toString(),
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update button appearance
+                        btn.data('current', newStatus);
+                        
+                        if (newStatus) {
+                            btn.removeClass('outline-success outline-info').addClass('success');
+                            icon.removeClass().addClass('fas fa-check');
+                        } else {
+                            btn.removeClass('success').addClass('outline-success outline-info');
+                            icon.removeClass().addClass('fas fa-times');
+                        }
+                        
+                        // Reload page to reflect changes
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        alert('Error: ' + response.error);
+                        icon.removeClass().addClass('fas fa-exclamation-triangle');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while updating clearance status.');
+                    icon.removeClass().addClass('fas fa-exclamation-triangle');
+                },
+                complete: function() {
+                    setTimeout(() => {
+                        btn.prop('disabled', false);
+                        icon.removeClass();
+                        if (clearanceType === 'finance') {
+                            icon.addClass('fas fa-coins');
+                        } else {
+                            icon.addClass('fas fa-graduation-cap');
+                        }
+                    }, 2000);
+                }
+            });
+        });
+        
+        // Print functionality
+        function printClearanceList() {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Semester Clearance Report</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; }
+                        table { width: 100%; border-collapse: collapse; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                        .cleared { background-color: #d4edda; }
+                        .pending { background-color: #fff3cd; }
+                        .ineligible { background-color: #f8d7da; }
+                    </style>
+                </head>
+                <body>
+                    <h2>Semester Clearance Report</h2>
+                    <p><strong>Academic Year:</strong> {{ academic_year.year_label }}</p>
+                    <p><strong>Semester:</strong> {{ semester.number }}</p>
+                    <p><strong>Generated:</strong> {{ current_date|date:"F d, Y" }}</p>
+                    ${$('#clearanceTable').parent().html()}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
+</body>
+</html>

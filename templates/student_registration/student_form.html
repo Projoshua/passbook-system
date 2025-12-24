@@ -1,0 +1,526 @@
+{% extends 'student_registration/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">{{ title }}</h4>
+                    <p class="card-subtitle text-muted">Fill in the student details below. Registration number must be unique and manually entered.</p>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="studentForm">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row">
+                            <!-- Registration Number Section -->
+                            <div class="col-md-12 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">Registration Details</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="{{ form.registration_number.id_for_label }}">
+                                                        Registration Number *
+                                                        <span class="text-muted small">(Manual entry)</span>
+                                                    </label>
+                                                    {{ form.registration_number }}
+                                                    {% if form.registration_number.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.registration_number.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                    <small class="form-text text-muted">
+                                                        Example: 909/24D/U/A001
+                                                    </small>
+                                                    <div id="registration-number-feedback" class="mt-1"></div>
+                                                </div>
+                                            </div>
+                                            
+                                            {% if not student %}
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="{{ form.confirm_registration_number.id_for_label }}">
+                                                        Confirm Registration Number *
+                                                    </label>
+                                                    {{ form.confirm_registration_number }}
+                                                    {% if form.confirm_registration_number.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.confirm_registration_number.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="{{ form.serial_number.id_for_label }}">
+                                                        Serial Number
+                                                    </label>
+                                                    {{ form.serial_number }}
+                                                    {% if form.serial_number.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.serial_number.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Student Information -->
+                            <div class="col-md-12 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">Student Information</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <div class="form-group">
+                                                    <label for="{{ form.name.id_for_label }}">Full Name *</label>
+                                                    {{ form.name }}
+                                                    {% if form.name.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.name.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="{{ form.nationality.id_for_label }}">Nationality *</label>
+                                                    {{ form.nationality }}
+                                                    {% if form.nationality.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.nationality.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="{{ form.program.id_for_label }}">Program *</label>
+                                                    {{ form.program }}
+                                                    {% if form.program.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.program.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="{{ form.admission_year.id_for_label }}">Admission Year *</label>
+                                                    {{ form.admission_year }}
+                                                    {% if form.admission_year.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.admission_year.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="{{ form.session.id_for_label }}">Session *</label>
+                                                    {{ form.session }}
+                                                    {% if form.session.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.session.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="{{ form.expected_graduation_year.id_for_label }}">
+                                                        Expected Graduation Year
+                                                    </label>
+                                                    {{ form.expected_graduation_year }}
+                                                    {% if form.expected_graduation_year.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.expected_graduation_year.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-8">
+                                                <div class="form-group">
+                                                    <label for="{{ form.student_contact.id_for_label }}">
+                                                        Student Contact *
+                                                    </label>
+                                                    {{ form.student_contact }}
+                                                    {% if form.student_contact.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.student_contact.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Parent/Guardian Information -->
+                            <div class="col-md-12 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-warning">
+                                        <h5 class="mb-0">Parent/Guardian Information (Optional)</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="{{ form.parent_guardian_name.id_for_label }}">
+                                                        Parent/Guardian Name
+                                                    </label>
+                                                    {{ form.parent_guardian_name }}
+                                                    {% if form.parent_guardian_name.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.parent_guardian_name.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="{{ form.parent_guardian_contact.id_for_label }}">
+                                                        Parent/Guardian Contact
+                                                    </label>
+                                                    {{ form.parent_guardian_contact }}
+                                                    {% if form.parent_guardian_contact.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.parent_guardian_contact.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Manual Receipt & Files -->
+                            <div class="col-md-12 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h5 class="mb-0">Documents & Files</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <div class="form-check">
+                                                        {{ form.manual_received }}
+                                                        <label class="form-check-label" for="{{ form.manual_received.id_for_label }}">
+                                                            Manual Received
+                                                        </label>
+                                                    </div>
+                                                    {% if form.manual_received.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.manual_received.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="{{ form.manual_received_date.id_for_label }}">
+                                                        Manual Received Date
+                                                    </label>
+                                                    {{ form.manual_received_date }}
+                                                    {% if form.manual_received_date.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.manual_received_date.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mt-3">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label for="{{ form.student_photo.id_for_label }}">
+                                                        Student Photo
+                                                    </label>
+                                                    {{ form.student_photo }}
+                                                    {% if form.student_photo.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.student_photo.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                    {% if student and student.student_photo %}
+                                                    <div class="mt-2">
+                                                        <img src="{{ student.student_photo.url }}" 
+                                                             alt="Student Photo" 
+                                                             class="img-thumbnail" 
+                                                             style="max-height: 100px;">
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label for="{{ form.parent_guardian_photo.id_for_label }}">
+                                                        Parent/Guardian Photo
+                                                    </label>
+                                                    {{ form.parent_guardian_photo }}
+                                                    {% if form.parent_guardian_photo.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.parent_guardian_photo.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                    {% if student and student.parent_guardian_photo %}
+                                                    <div class="mt-2">
+                                                        <img src="{{ student.parent_guardian_photo.url }}" 
+                                                             alt="Parent Photo" 
+                                                             class="img-thumbnail" 
+                                                             style="max-height: 100px;">
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label for="{{ form.signature.id_for_label }}">
+                                                        Student Signature
+                                                    </label>
+                                                    {{ form.signature }}
+                                                    {% if form.signature.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.signature.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label for="{{ form.parent_guardian_signature.id_for_label }}">
+                                                        Parent Signature
+                                                    </label>
+                                                    {{ form.parent_guardian_signature }}
+                                                    {% if form.parent_guardian_signature.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.parent_guardian_signature.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mt-4">
+                            <div class="btn-group" role="group">
+                                <button type="submit" name="save" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Student
+                                </button>
+                                
+                                {% if not student %}
+                                <button type="submit" name="save_and_add_another" class="btn btn-success">
+                                    <i class="fas fa-plus-circle"></i> Save & Add Another
+                                </button>
+                                {% endif %}
+                                
+                                <button type="submit" name="save_and_view" class="btn btn-info">
+                                    <i class="fas fa-eye"></i> Save & View
+                                </button>
+                                
+                                <a href="{% url 'pass_book:student_list' %}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Real-time registration number validation
+    $('#{{ form.registration_number.id_for_label }}').on('blur', function() {
+        var registrationNumber = $(this).val();
+        var studentId = '{{ student.id|default:"" }}';
+        
+        if (registrationNumber.length > 0) {
+            $.ajax({
+                url: '{% url "check_registration_number" %}',
+                data: {
+                    'registration_number': registrationNumber,
+                    'student_id': studentId
+                },
+                dataType: 'json',
+                success: function(data) {
+                    var feedback = $('#registration-number-feedback');
+                    if (data.exists) {
+                        feedback.html('<span class="text-danger"><i class="fas fa-times-circle"></i> ' + data.message + '</span>');
+                    } else {
+                        feedback.html('<span class="text-success"><i class="fas fa-check-circle"></i> ' + data.message + '</span>');
+                    }
+                }
+            });
+        }
+    });
+    
+    // Show/hide manual received date based on checkbox
+    $('#{{ form.manual_received.id_for_label }}').change(function() {
+        if ($(this).is(':checked')) {
+            $('#{{ form.manual_received_date.id_for_label }}').closest('.form-group').show();
+        } else {
+            $('#{{ form.manual_received_date.id_for_label }}').closest('.form-group').hide();
+        }
+    }).trigger('change');
+    
+    // Form submission validation
+    $('#studentForm').submit(function(e) {
+        var registrationNumber = $('#{{ form.registration_number.id_for_label }}').val();
+        var confirmRegistrationNumber = $('#{{ form.confirm_registration_number.id_for_label }}').val();
+        
+        if (!registrationNumber) {
+            e.preventDefault();
+            alert('Registration number is required!');
+            return false;
+        }
+        
+        // For new students, check if confirmation matches
+        if (!studentId && registrationNumber !== confirmRegistrationNumber) {
+            e.preventDefault();
+            alert('Registration numbers do not match!');
+            return false;
+        }
+        
+        return true;
+    });
+});
+</script>
+
+
+
+<script>
+    window.addEventListener('load', function() {
+        const minioIP = '192.168.43.57:9000';
+        
+        function replaceMinioURLs() {
+            // Replace in all img tags
+            document.querySelectorAll('img[src*="minio:9000"]').forEach(img => {
+                img.src = img.src.replace('minio:9000', minioIP);
+            });
+            
+            // Replace in background images
+            document.querySelectorAll('*').forEach(el => {
+                const bgImage = window.getComputedStyle(el).backgroundImage;
+                if (bgImage && bgImage.includes('minio:9000')) {
+                    el.style.backgroundImage = bgImage.replace('minio:9000', minioIP);
+                }
+            });
+            
+            // Replace in source tags
+            document.querySelectorAll('source[src*="minio:9000"], source[srcset*="minio:9000"]').forEach(source => {
+                if (source.src) source.src = source.src.replace('minio:9000', minioIP);
+                if (source.srcset) source.srcset = source.srcset.replace(/minio:9000/g, minioIP);
+            });
+            
+            // Replace in anchor tags
+            document.querySelectorAll('a[href*="minio:9000"]').forEach(link => {
+                link.href = link.href.replace('minio:9000', minioIP);
+            });
+        }
+        
+        // Run on load
+        replaceMinioURLs();
+        
+        // Run on page show (handles back/forward cache)
+        window.addEventListener('pageshow', replaceMinioURLs);
+        
+        // Handle dynamically loaded content
+        new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === 1) {
+                        if (node.tagName === 'IMG' && node.src && node.src.includes('minio:9000')) {
+                            node.src = node.src.replace('minio:9000', minioIP);
+                        }
+                        node.querySelectorAll('img[src*="minio:9000"]').forEach(img => {
+                            img.src = img.src.replace('minio:9000', minioIP);
+                        });
+                    }
+                });
+            });
+        }).observe(document.body, { childList: true, subtree: true });
+    });
+    </script>
+{% endblock %}

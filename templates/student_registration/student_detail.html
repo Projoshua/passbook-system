@@ -1,0 +1,240 @@
+
+{% extends "student_registration/base.html" %}
+{% load static %}
+
+{% block title %}{{ student.name }} - Student Profile{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-12 text-center">
+      <h1 class="display-5 fw-bold text-primary">
+        <i class="fas fa-user-graduate me-2"></i>
+        {{ student.name }}
+      </h1>
+      <p class="lead text-muted">
+        <span class="badge bg-info">{{ student.program.name }}</span>
+        <span class="badge bg-secondary">{{ student.get_session_display }} Session</span>
+        <span class="badge bg-success">{{ student.admission_year }}</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Student Photo Card -->
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-primary text-white text-center">
+          <i class="fas fa-user me-2"></i> Student Photo
+        </div>
+        <div class="card-body text-center">
+          {% if student.student_photo %}
+            <img src="{{ student.student_photo.url }}" class="img-fluid rounded-circle mb-3" style="width: 180px; height: 180px; object-fit: cover;" alt="Student Photo">
+          {% else %}
+            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 180px; height: 180px;">
+              <i class="fas fa-user fa-4x text-muted"></i>
+            </div>
+          {% endif %}
+          <h5 class="card-title">{{ student.name }}</h5>
+          <p class="text-muted small mb-0">Student</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Parent Photo Card -->
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-success text-white text-center">
+          <i class="fas fa-user-friends me-2"></i> Parent/Guardian Photo
+        </div>
+        <div class="card-body text-center">
+          {% if student.parent_guardian_photo %}
+            <img src="{{ student.parent_guardian_photo.url }}" class="img-fluid rounded-circle mb-3" style="width: 180px; height: 180px; object-fit: cover;" alt="Parent Photo">
+          {% else %}
+            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 180px; height: 180px;">
+              <i class="fas fa-user fa-4x text-muted"></i>
+            </div>
+          {% endif %}
+          <h5 class="card-title">{{ student.parent_guardian_name }}</h5>
+          <p class="text-muted small mb-0">Parent/Guardian</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signature Preview Card -->
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-warning text-dark text-center">
+          <i class="fas fa-signature me-2"></i> Signatures
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <h6 class="fw-bold"><i class="fas fa-pen me-2 text-primary"></i> Student Signature</h6>
+            {% if student.signature %}
+              <img src="{{ student.signature.url }}" class="img-fluid border rounded" alt="Student Signature" style="max-height: 80px;">
+            {% else %}
+              <span class="text-muted">Not provided</span>
+            {% endif %}
+          </div>
+          <div>
+            <h6 class="fw-bold"><i class="fas fa-pen me-2 text-success"></i> Parent Signature</h6>
+            {% if student.parent_guardian_signature %}
+              <img src="{{ student.parent_guardian_signature.url }}" class="img-fluid border rounded" alt="Parent Signature" style="max-height: 80px;">
+            {% else %}
+              <span class="text-muted">Not provided</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Details Section -->
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h3 class="mb-0">
+            <i class="fas fa-info-circle me-2 text-info"></i>
+            Student Information
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-hashtag me-2 text-muted"></i> Access Number</span>
+                  <strong class="text-primary">{{ student.static_access_number }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-id-card me-2 text-muted"></i> Registration Number</span>
+                  <code class="bg-light px-2 py-1 rounded">{{ student.registration_number }}</code>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-globe me-2 text-muted"></i> Nationality</span>
+                  <span>{{ student.nationality }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-phone me-2 text-muted"></i> Student Contact</span>
+                  <span>{{ student.student_contact }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-calendar-check me-2 text-muted"></i> Admission Year</span>
+                  <span>{{ student.admission_year }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-clock me-2 text-muted"></i> Expected Graduation</span>
+                  <span>{{ student.expected_graduation_year }}</span>
+                </li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-user-tie me-2 text-muted"></i> Parent/Guardian</span>
+                  <span>{{ student.parent_guardian_name }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-phone me-2 text-muted"></i> Parent Contact</span>
+                  <span>{{ student.parent_guardian_contact }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-book me-2 text-muted"></i> Manual Received</span>
+                  <span class="badge bg-{{ student.manual_received|yesno:'success,danger' }}">
+                    {{ student.manual_received|yesno:"Yes,No" }}
+                  </span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-calendar-day me-2 text-muted"></i> Manual Received Date</span>
+                  <span>{{ student.manual_received_date|default:"—" }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-graduation-cap me-2 text-muted"></i> Program Code</span>
+                  <span class="badge bg-secondary">{{ student.program_code }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-sort-numeric-up me-2 text-muted"></i> Student Number</span>
+                  <span class="badge bg-info">{{ student.student_number }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  {% if not user.is_student %}
+  <div class="row mt-4">
+    <div class="col-12 text-center">
+      <a href="{% url 'pass_book:student_update' student.pk %}" class="btn btn-warning me-2">
+        <i class="fas fa-edit me-1"></i> Edit
+      </a>
+      <a href="{% url 'pass_book:student_delete' student.pk %}" class="btn btn-danger me-2">
+        <i class="fas fa-trash-alt me-1"></i> Delete
+      </a>
+      <a href="{% url 'pass_book:student_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Back to List
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+<script>
+  window.addEventListener('load', function() {
+      const minioIP = '192.168.43.57:9000';
+      
+      function replaceMinioURLs() {
+          // Replace in all img tags
+          document.querySelectorAll('img[src*="minio:9000"]').forEach(img => {
+              img.src = img.src.replace('minio:9000', minioIP);
+          });
+          
+          // Replace in background images
+          document.querySelectorAll('*').forEach(el => {
+              const bgImage = window.getComputedStyle(el).backgroundImage;
+              if (bgImage && bgImage.includes('minio:9000')) {
+                  el.style.backgroundImage = bgImage.replace('minio:9000', minioIP);
+              }
+          });
+          
+          // Replace in source tags
+          document.querySelectorAll('source[src*="minio:9000"], source[srcset*="minio:9000"]').forEach(source => {
+              if (source.src) source.src = source.src.replace('minio:9000', minioIP);
+              if (source.srcset) source.srcset = source.srcset.replace(/minio:9000/g, minioIP);
+          });
+          
+          // Replace in anchor tags
+          document.querySelectorAll('a[href*="minio:9000"]').forEach(link => {
+              link.href = link.href.replace('minio:9000', minioIP);
+          });
+      }
+      
+      // Run on load
+      replaceMinioURLs();
+      
+      // Run on page show (handles back/forward cache)
+      window.addEventListener('pageshow', replaceMinioURLs);
+      
+      // Handle dynamically loaded content
+      new MutationObserver(mutations => {
+          mutations.forEach(mutation => {
+              mutation.addedNodes.forEach(node => {
+                  if (node.nodeType === 1) {
+                      if (node.tagName === 'IMG' && node.src && node.src.includes('minio:9000')) {
+                          node.src = node.src.replace('minio:9000', minioIP);
+                      }
+                      node.querySelectorAll('img[src*="minio:9000"]').forEach(img => {
+                          img.src = img.src.replace('minio:9000', minioIP);
+                      });
+                  }
+              });
+          });
+      }).observe(document.body, { childList: true, subtree: true });
+  });
+  </script>
+{% endblock %}
+
+

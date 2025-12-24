@@ -1,0 +1,60 @@
+
+{% extends "student_registration/reports/base.html" %}
+{% load static %}
+
+{% block report_content %}
+<div class="filters no-print">
+    <h3>Filter by Program</h3>
+    <form method="get">
+        <label for="program">Program:</label>
+        <select name="program" id="program">
+            <option value="">All Programs</option>
+            {% for program in programs %}
+            <option value="{{ program.id }}" {% if request.GET.program == program.id|stringformat:"s" %}selected{% endif %}>
+                {{ program.name }}
+            </option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Apply Filters">
+    </form>
+</div>
+
+<div class="summary-box">
+    Total Outstanding Amount: <strong>UGX {{ total_receivable }}</strong>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Student Name</th>
+            <th>Registration Number</th>
+            <th>Program</th>
+            <th>Laptop Serial</th>
+            <th>Total Cost (UGX)</th>
+            <th>Amount Paid (UGX)</th>
+            <th>Balance (UGX)</th>
+            <th>Comments</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for scheme in schemes %}
+        <tr>
+            <td>{{ scheme.student.name }}</td>
+            <td>{{ scheme.student.registration_number }}</td>
+            <td>{{ scheme.student.program.name }}</td>
+            <td>{{ scheme.laptop_serial_number|default:"N/A" }}</td>
+            <td class="text-right">{{ scheme.total_cost}}</td>
+            <td class="text-right">{{ scheme.payment_made}}</td>
+            <td class="text-right"><strong>{{ scheme.balance }}</strong></td>
+            <td>{{ scheme.comments|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8">No outstanding balances found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+

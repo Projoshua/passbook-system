@@ -1,0 +1,29 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Delete Semester - Student Passbook{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>
+        <i class="fas fa-trash me-3"></i>Delete Semester
+    </h1>
+</div>
+
+<div class="card card-custom">
+    <div class="card-body">
+        <p>Are you sure you want to delete the semester <strong>{{ object.get_number_display }}</strong>?</p>
+        <p>This action cannot be undone.</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex gap-2">
+                <a href="{% url 'pass_book:semester_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-danger">Delete Semester</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+

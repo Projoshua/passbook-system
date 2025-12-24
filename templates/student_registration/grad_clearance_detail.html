@@ -1,0 +1,314 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Graduation Clearance - {{ student.name }} - SLAU{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-badge.status-cleared {
+        background-color: #27ae60;
+        color: white;
+    }
+    .status-badge.status-pending {
+        background-color: #f39c12;
+        color: #000;
+    }
+    .info-section {
+        border-left: 4px solid #27ae60;
+        padding-left: 1.5rem;
+        margin: 1.5rem 0;
+    }
+    .signature-display {
+        max-width: 300px;
+        max-height: 150px;
+        border: 1px solid #dee2e6;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 0.375rem;
+    }
+    .timeline .d-flex {
+        position: relative;
+        padding-left: 2rem;
+    }
+    .timeline .d-flex::before {
+        content: '';
+        position: absolute;
+        left: 0.75rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .timeline .d-flex:last-child::before {
+        display: none;
+    }
+    .timeline .flex-shrink-0 {
+        position: absolute;
+        left: 0;
+        width: 1.5rem;
+        height: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px white, 0 0 0 4px #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-graduation-cap me-2"></i>Graduation Clearance Details</h2>
+    <p class="text-muted">Complete graduation clearance information for <strong>{{ student.name }}</strong></p>
+</div>
+
+<!-- Student Info Card -->
+<div class="card card-custom mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-user me-2"></i>Student Information</h5>
+        {% if clearance.all_requirements_met %}
+        <span class="badge status-badge status-cleared">
+            <i class="fas fa-check-circle me-1"></i>CLEARED FOR GRADUATION
+        </span>
+        {% else %}
+        <span class="badge status-badge status-pending">
+            <i class="fas fa-clock me-1"></i>PENDING CLEARANCE
+        </span>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h4 class="text-primary">{{ student.name }}</h4>
+                <div class="mb-3">
+                    <strong>Registration Number:</strong><br>
+                    <span class="text-muted">{{ student.registration_number|default:"Not Assigned" }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Static Access Number:</strong><br>
+                    <span class="text-muted">{{ student.static_access_number }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Program:</strong><br>
+                    <span class="text-muted">{{ student.program.name }}</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <strong>Admission Year:</strong><br>
+                    <span class="text-muted">{{ student.admission_year }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Session:</strong><br>
+                    <span class="text-muted">{{ student.get_session_display }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Expected Graduation:</strong><br>
+                    <span class="text-muted">{{ student.expected_graduation_year|default:"Not Set" }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Nationality:</strong><br>
+                    <span class="text-muted">{{ student.nationality }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Clearance Details -->
+<div class="card card-custom mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Clearance Status</h5>
+    </div>
+    <div class="card-body">
+        <div class="info-section">
+            <h6 class="text-success">Requirements Status</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <strong>All Requirements Met:</strong><br>
+                        {% if clearance.all_requirements_met %}
+                        <span class="text-success">
+                            <i class="fas fa-check-circle me-1"></i>Yes
+                        </span>
+                        {% else %}
+                        <span class="text-warning">
+                            <i class="fas fa-clock me-1"></i>No - Pending
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <strong>Clearance Date:</strong><br>
+                        <span class="text-muted">
+                            {% if clearance.clearance_date %}
+                            {{ clearance.clearance_date|date:"F d, Y" }}
+                            {% else %}
+                            Not Set
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if clearance.approving_officer_name %}
+        <div class="info-section">
+            <h6 class="text-primary">Approving Officer</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <strong>Officer Name:</strong><br>
+                        <span class="text-muted">{{ clearance.approving_officer_name }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Designation:</strong><br>
+                        <span class="text-muted">{{ clearance.approving_officer_designation }}</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    {% if clearance.approving_officer_signature %}
+                    <div class="mb-3">
+                        <strong>Digital Signature:</strong><br>
+                        <img src="{{ clearance.approving_officer_signature.url }}" 
+                             alt="Approving Officer Signature" 
+                             class="signature-display">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Timeline -->
+<div class="card card-custom mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Timeline</h5>
+    </div>
+    <div class="card-body">
+        <div class="timeline">
+            <div class="d-flex mb-3">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-plus-circle text-info"></i>
+                </div>
+                <div class="ms-3">
+                    <strong>Clearance Record Created</strong><br>
+                    <small class="text-muted">{{ clearance.created_at|date:"F d, Y g:i A" }}</small>
+                </div>
+            </div>
+            
+            {% if clearance.clearance_date %}
+            <div class="d-flex mb-3">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-success"></i>
+                </div>
+                <div class="ms-3">
+                    <strong>Requirements Cleared</strong><br>
+                    <small class="text-muted">{{ clearance.clearance_date|date:"F d, Y" }}</small>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="d-flex mb-3">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-edit text-warning"></i>
+                </div>
+                <div class="ms-3">
+                    <strong>Last Updated</strong><br>
+                    <small class="text-muted">{{ clearance.updated_at|date:"F d, Y g:i A" }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Sidebar -->
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card card-custom sticky-top" style="top: 20px;">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'pass_book:graduation_clearance_edit' student.pk %}" 
+                       class="btn btn-warning">
+                        <i class="fas fa-edit me-2"></i>Edit Clearance
+                    </a>
+                    
+                    {% if clearance.all_requirements_met %}
+                    <a href="{% url 'pass_book:graduation_certificate_view' student.pk %}" 
+                       class="btn btn-success">
+                        <i class="fas fa-certificate me-2"></i>Generate Certificate
+                    </a>
+                    {% endif %}
+                    
+                    <button onclick="window.print()" class="btn btn-info">
+                        <i class="fas fa-print me-2"></i>Print Details
+                    </button>
+                    
+                    <hr>
+                    
+                    <a href="{% url 'pass_book:graduation_clearance_delete' student.pk %}" 
+                       class="btn btn-outline-danger"
+                       onclick="return confirm('Are you sure you want to delete this graduation clearance? This action cannot be undone.')">
+                        <i class="fas fa-trash me-2"></i>Delete Clearance
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="card card-custom mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Quick Info</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-primary">{{ student.admission_year }}</h4>
+                            <small class="text-muted">Admission Year</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="{% if clearance.all_requirements_met %}text-success{% else %}text-warning{% endif %}">
+                            {% if clearance.all_requirements_met %}✓{% else %}⏳{% endif %}
+                        </h4>
+                        <small class="text-muted">Status</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Info -->
+        {% if student.student_contact or student.parent_guardian_contact %}
+        <div class="card card-custom mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-phone me-2"></i>Contact Info</h6>
+            </div>
+            <div class="card-body">
+                {% if student.student_contact %}
+                <div class="mb-2">
+                    <strong>Student:</strong><br>
+                    <small class="text-muted">{{ student.student_contact }}</small>
+                </div>
+                {% endif %}
+                {% if student.parent_guardian_name and student.parent_guardian_contact %}
+                <div class="mb-2">
+                    <strong>{{ student.parent_guardian_name }}:</strong><br>
+                    <small class="text-muted">{{ student.parent_guardian_contact }}</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+

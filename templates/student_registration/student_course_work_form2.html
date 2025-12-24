@@ -1,0 +1,210 @@
+
+{% extends 'base.html' %} <!-- Adjust according to your base template -->
+
+{% load static %}
+
+{% block title %}Manage Course Works - {{ student.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-4">Course Work Management</h3>
+
+  <!-- Student Info -->
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h5>Student Information</h5>
+    </div>
+    <div class="card-body">
+      <p><strong>Name:</strong> {{ student.get_full_name }}</p>
+      <p><strong>Access Number:</strong> {{ access_num.access_number }}</p>
+      <p><strong>Programme:</strong> {{ student.programme }}</p>
+      <p><strong>Year of Study:</strong> {{ access_num.year_of_study }}</p>
+      <p><strong>Semester:</strong> {{ access_num.semester }}</p>
+    </div>
+  </div>
+
+  <!-- Assigned Course Works Table -->
+  {% if course_works %}
+  <div class="card mb-4">
+    <div class="card-header bg-success text-white">
+      <h5>Assigned Course Works</h5>
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+          <tr>
+            <th>Course Unit</th>
+            <th>Course Work Title</th>
+            <th>Status</th>
+            <th>Submission Date</th>
+            <th>HOD Certified</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for scw in course_works %}
+          <tr>
+            <td>{{ scw.course_work.course_unit.code }} - {{ scw.course_work.course_unit.name }}</td>
+            <td>{{ scw.course_work.title }}</td>
+            <td>{{ scw.get_status_display|default:"Pending" }}</td>
+            <td>{{ scw.submission_date|date:"Y-m-d"|default:"-" }}</td>
+            <td>{% if scw.hod_certified %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-warning text-dark">No</span>{% endif %}</td>
+            <td>
+              <a href="{% url 'pass_book:course_work_detail' access_number=access_num.access_number %}" class="btn btn-sm btn-info">View</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-info mb-4">
+    No course works have been assigned yet.
+  </div>
+  {% endif %}
+
+  <!-- Add New Course Works Formset -->
+  <div class="card">
+    <div class="card-header bg-secondary text-white">
+      <h5>Add / Update Course Works</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{ formset.management_form }}
+
+        {% if formset.non_form_errors %}
+        <div class="alert alert-danger">
+          {{ formset.non_form_errors }}
+        </div>
+        {% endif %}
+
+        <table class="table table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>Course Work</th>
+              <th>Status</th>
+              <th>Submission Date</th>
+              <th>HOD Certified</th>
+              <th>HOD Name</th>
+              <th>Designation</th>
+              <th>Department</th>
+              <th>Certification Date</th>
+              <th>Signature</th>
+              <th>Delete?</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for form in formset %}
+            {% if form.non_field_errors %}
+            <tr class="bg-danger text-white">
+              <td colspan="10">{{ form.non_field_errors }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+              <!-- Course Work Field -->
+              <td>
+                {{ form.course_work }}
+                {% if form.course_work.errors %}<div class="text-danger small">{{ form.course_work.errors }}</div>{% endif %}
+              </td>
+
+              <!-- Status -->
+              <td>
+                {{ form.status }}
+                {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors }}</div>{% endif %}
+              </td>
+
+              <!-- Submission Date -->
+              <td>
+                {{ form.submission_date }}
+                {% if form.submission_date.errors %}<div class="text-danger small">{{ form.submission_date.errors }}</div>{% endif %}
+              </td>
+
+              <!-- HOD Certified -->
+              <td class="text-center">
+                {{ form.hod_certified }}
+                {% if form.hod_certified.errors %}<div class="text-danger small">{{ form.hod_certified.errors }}</div>{% endif %}
+              </td>
+
+              <!-- HOD Name -->
+              <td>
+                {{ form.hod_name }}
+                {% if form.hod_name.errors %}<div class="text-danger small">{{ form.hod_name.errors }}</div>{% endif %}
+              </td>
+
+              <!-- Designation -->
+              <td>
+                {{ form.hod_designation }}
+                {% if form.hod_designation.errors %}<div class="text-danger small">{{ form.hod_designation.errors }}</div>{% endif %}
+              </td>
+
+              <!-- Department -->
+              <td>
+                {{ form.hod_department }}
+                {% if form.hod_department.errors %}<div class="text-danger small">{{ form.hod_department.errors }}</div>{% endif %}
+              </td>
+
+              <!-- Certification Date -->
+              <td>
+                {{ form.hod_certification_date }}
+                {% if form.hod_certification_date.errors %}<div class="text-danger small">{{ form.hod_certification_date.errors }}</div>{% endif %}
+              </td>
+
+              <!-- Signature Upload -->
+              <td>
+                {% if form.instance.hod_signature %}
+                <div class="mb-1">
+                  <a href="{{ form.instance.hod_signature.url }}" target="_blank">Current</a>
+                </div>
+                {% endif %}
+                {{ form.hod_signature }}
+                {% if form.hod_signature.errors %}<div class="text-danger small">{{ form.hod_signature.errors }}</div>{% endif %}
+              </td>
+
+              <!-- Delete Checkbox -->
+              <td class="text-center">
+                {{ form.DELETE }}
+                {% if form.DELETE.errors %}<div class="text-danger small">{{ form.DELETE.errors }}</div>{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <!-- Submit Button -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+          <a href="{% url 'pass_book:course_work_detail' access_number=access_num.access_number %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+          <button type="submit" class="btn btn-success">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Optional: Confirm before deleting
+  document.addEventListener('DOMContentLoaded', function () {
+    const deleteCheckboxes = document.querySelectorAll('input[name$="-DELETE"]');
+    deleteCheckboxes.forEach(cb => {
+      cb.addEventListener('change', function () {
+        if (this.checked) {
+          const row = this.closest('tr');
+          const cwSelect = row.querySelector('select[name$="-course_work"]');
+          if (cwSelect && cwSelect.value) {
+            const cwLabel = cwSelect.options[cwSelect.selectedIndex].text;
+            if (!confirm(`Are you sure you want to remove "${cwLabel}"?`)) {
+              this.checked = false;
+            }
+          }
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}
+
+

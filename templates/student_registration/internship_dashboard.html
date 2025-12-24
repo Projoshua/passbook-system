@@ -1,0 +1,186 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Dashboard - Internship Management{% endblock %}
+
+{% block content %}
+<div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
+        <div>
+            <a href="{% url 'pass_book:student_search' %}" class="btn btn-primary">
+                <i class="bi bi-search"></i> Find Students
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title text-muted">Total Internships</h5>
+                            <h2 class="text-primary">{{ stats.total_internships }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-briefcase fs-1 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title text-muted">Completed</h5>
+                            <h2 class="text-success">{{ stats.done_internships }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-check-circle fs-1 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title text-muted">Not Done</h5>
+                            <h2 class="text-danger">{{ stats.not_done_internships }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-x-circle fs-1 text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title text-muted">Total Students</h5>
+                            <h2 class="text-info">{{ stats.total_students }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-people fs-1 text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Internships -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Internship Updates</h5>
+                    <a href="{% url 'pass_book:internship_list' %}" class="btn btn-outline-primary btn-sm">
+                        View All <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_internships %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Access Number</th>
+                                        <th>Student Name</th>
+                                        <th>Status</th>
+                                        <th>Company</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for internship in recent_internships %}
+                                    <tr>
+                                        <td>
+                                            <code>{{ internship.access_number.access_number }}</code>
+                                        </td>
+                                        <td>{{ internship.access_number.student.name }}</td>
+                                        <td>
+                                            {% if internship.status == 'DONE' %}
+                                                <span class="badge bg-success">Done</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Not Done</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ internship.company_name|default:"-" }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'pass_book:internship_detail' internship.access_number.access_number %}" 
+                                                   class="btn btn-outline-info" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{% url 'pass_book:internship_edit' internship.access_number.access_number %}" 
+                                                   class="btn btn-outline-primary" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox fs-1 text-muted"></i>
+                            <p class="text-muted mt-2">No internship records found.</p>
+                            <a href="{% url 'pass_book:student_search' %}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i> Add First Internship
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{% url 'pass_book:student_search' %}" class="btn btn-outline-primary btn-lg">
+                                    <i class="bi bi-search"></i><br>
+                                    <small>Find Students</small>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{% url 'pass_book:internship_list' %}?status=NOT_DONE" class="btn btn-outline-warning btn-lg">
+                                    <i class="bi bi-exclamation-triangle"></i><br>
+                                    <small>Pending Internships</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

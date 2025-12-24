@@ -1,0 +1,325 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Select Students for Graduation - SLAU{% endblock %}
+
+{% block extra_css %}
+<style>
+    .student-card {
+        transition: transform 0.2s;
+        border-left: 4px solid #3498db;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .student-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .clearance-status.cleared {
+        background-color: #27ae60;
+        color: white;
+    }
+    .clearance-status.pending {
+        background-color: #f39c12;
+        color: #000;
+    }
+    .clearance-status.none {
+        background-color: #6c757d;
+        color: white;
+    }
+    .bulk-actions {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 0;
+        margin: -30px -30px 2rem -30px;
+        border-radius: 10px 10px 0 0;
+    }
+    .bulk-actions .container {
+        padding: 0 30px;
+    }
+    .card-header {
+        border-bottom: 1px solid #e9ecef;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-graduation-cap me-2"></i>Student Graduation Management</h2>
+    <p class="text-muted">Select students to manage their graduation clearance</p>
+</div>
+
+<!-- Search and Filters -->
+<div class="card card-custom mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Search & Filter Students</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Name, registration, access number..." 
+                       value="{{ search_query }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Program</label>
+                <select name="program" class="form-select">
+                    <option value="">All Programs</option>
+                    {% for program in programs %}
+                    <option value="{{ program.id }}" {% if program.id|stringformat:'s' == program_filter %}selected{% endif %}>
+                        {{ program.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Year</label>
+                <select name="year" class="form-select">
+                    <option value="">All Years</option>
+                    {% for year in years %}
+                    <option value="{{ year }}" {% if year|stringformat:'s' == year_filter %}selected{% endif %}>
+                        {{ year }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Session</label>
+                <select name="session" class="form-select">
+                    <option value="">All Sessions</option>
+                    {% for session in sessions %}
+                    <option value="{{ session.0 }}" {% if session.0 == session_filter %}selected{% endif %}>
+                        {{ session.1 }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Clearance</label>
+                <select name="clearance" class="form-select">
+                    <option value="">All</option>
+                    <option value="has_clearance" {% if clearance_filter == 'has_clearance' %}selected{% endif %}>Has Clearance</option>
+                    <option value="no_clearance" {% if clearance_filter == 'no_clearance' %}selected{% endif %}>No Clearance</option>
+                    <option value="cleared" {% if clearance_filter == 'cleared' %}selected{% endif %}>Cleared</option>
+                    <option value="pending" {% if clearance_filter == 'pending' %}selected{% endif %}>Pending</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary-custom">
+                    <i class="fas fa-search me-2"></i>Search
+                </button>
+                <a href="{% url 'pass_book:student_selection_view' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>Clear Filters
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bulk Actions -->
+<div class="bulk-actions">
+    <div class="container">
+        <form method="POST" action="{% url 'pass_book:bulk_clearance_action' %}" id="bulkForm">
+            {% csrf_token %}
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <strong>{{ total_count }} student(s) found</strong>
+                    <span id="selectedCount" class="text-muted ms-3"></span>
+                </div>
+                <div class="col-md-6 text-end">
+                    <select name="action" class="form-select d-inline-block w-auto me-2">
+                        <option value="">Select Action...</option>
+                        <option value="create_clearances">Create Clearances</option>
+                        <option value="mark_cleared">Mark as Cleared</option>
+                        <option value="mark_pending">Mark as Pending</option>
+                    </select>
+                    <button type="submit" class="btn btn-warning" id="bulkActionBtn" disabled>
+                        <i class="fas fa-play me-2"></i>Apply
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Students List -->
+<div class="row g-3">
+    <div class="col-md-1">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="selectAll">
+            <label class="form-check-label" for="selectAll">
+                <strong>All</strong>
+            </label>
+        </div>
+    </div>
+    <div class="col-md-11">
+        <div class="row g-3">
+            {% for student in page_obj %}
+            <div class="col-lg-6 col-xl-4">
+                <div class="card student-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input student-checkbox" type="checkbox" 
+                                       name="student_ids" value="{{ student.pk }}" 
+                                       form="bulkForm" id="student_{{ student.pk }}">
+                            </div>
+                            {% if student.graduation_clearance %}
+                                {% if student.graduation_clearance.all_requirements_met %}
+                                <span class="badge clearance-status cleared">
+                                    <i class="fas fa-check-circle me-1"></i>Cleared
+                                </span>
+                                {% else %}
+                                <span class="badge clearance-status pending">
+                                    <i class="fas fa-clock me-1"></i>Pending
+                                </span>
+                                {% endif %}
+                            {% else %}
+                            <span class="badge clearance-status none">
+                                <i class="fas fa-minus-circle me-1"></i>No Clearance
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <h6 class="card-title">{{ student.name }}</h6>
+                        <div class="text-muted small mb-2">
+                            <div><i class="fas fa-id-card me-2"></i>{{ student.registration_number|default:"N/A" }}</div>
+                            <div><i class="fas fa-barcode me-2"></i>{{ student.static_access_number }}</div>
+                            <div><i class="fas fa-book me-2"></i>{{ student.program.name }}</div>
+                            <div><i class="fas fa-calendar me-2"></i>{{ student.admission_year }} - {{ student.get_session_display }}</div>
+                        </div>
+                        
+                        <div class="btn-group btn-group-sm w-100" role="group">
+                            {% if student.graduation_clearance %}
+                            <a href="{% url 'pass_book:graduation_clearance_detail' student.pk %}" 
+                               class="btn btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'pass_book:graduation_clearance_edit' student.pk %}" 
+                               class="btn btn-outline-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% if student.graduation_clearance.all_requirements_met %}
+                            <a href="{% url 'pass_book:graduation_certificate_view' student.pk %}" 
+                               class="btn btn-outline-success">
+                                <i class="fas fa-certificate"></i>
+                            </a>
+                            {% endif %}
+                            {% else %}
+                            <a href="{% url 'pass_book:graduation_clearance_create' student.pk %}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Create Clearance
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No students found matching your criteria.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Students pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}{% if session_filter %}&session={{ session_filter }}{% endif %}{% if clearance_filter %}&clearance={{ clearance_filter }}{% endif %}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+        </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}{% if session_filter %}&session={{ session_filter }}{% endif %}{% if clearance_filter %}&clearance={{ clearance_filter }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}{% if session_filter %}&session={{ session_filter }}{% endif %}{% if clearance_filter %}&clearance={{ clearance_filter }}{% endif %}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Handle select all functionality
+    document.getElementById('selectAll')?.addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.student-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateSelectedCount();
+    });
+
+    // Handle individual checkbox changes
+    document.querySelectorAll('.student-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+
+    function updateSelectedCount() {
+        const checkedBoxes = document.querySelectorAll('.student-checkbox:checked');
+        const count = checkedBoxes.length;
+        const selectedCountSpan = document.getElementById('selectedCount');
+        const bulkActionBtn = document.getElementById('bulkActionBtn');
+        
+        if (count > 0) {
+            selectedCountSpan.textContent = `(${count} selected)`;
+            bulkActionBtn.disabled = false;
+        } else {
+            selectedCountSpan.textContent = '';
+            bulkActionBtn.disabled = true;
+        }
+    }
+
+    // Handle bulk form submission
+    document.getElementById('bulkForm')?.addEventListener('submit', function(e) {
+        const action = this.querySelector('select[name="action"]').value;
+        const checkedBoxes = document.querySelectorAll('.student-checkbox:checked');
+        
+        if (!action) {
+            e.preventDefault();
+            alert('Please select an action to perform.');
+            return;
+        }
+        
+        if (checkedBoxes.length === 0) {
+            e.preventDefault();
+            alert('Please select at least one student.');
+            return;
+        }
+        
+        const confirmMessage = `Are you sure you want to ${action.replace('_', ' ')} for ${checkedBoxes.length} student(s)?`;
+        if (!confirm(confirmMessage)) {
+            e.preventDefault();
+        }
+    });
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', updateSelectedCount);
+</script>
+{% endblock %}
+
+

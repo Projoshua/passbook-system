@@ -1,0 +1,88 @@
+
+{% extends 'student_registration/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}
+    {% if application %}Edit{% else %}New{% endif %} Dead Semester Application
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{% if application %}Edit{% else %}New{% endif %} Dead Semester Application</h2>
+        <a href="{% url 'pass_book:dead_semester_applications' %}" class="btn btn-outline-secondary btn-sm">← Back to List</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            Student: <strong>{{ student.name }}</strong> | Access No: {{ student.static_access_number }}
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Application Type</label>
+                        {{ form.application_type|add_class:"form-select" }}
+                        {% if form.application_type.errors %}<div class="text-danger small">{{ form.application_type.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3" id="semesterField" style="display: none;">
+                        <label class="form-label">Dead Semester (1 or 2)</label>
+                        {{ form.dead_semester|add_class:"form-control" }}
+                        {% if form.dead_semester.errors %}<div class="text-danger small">{{ form.dead_semester.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3" id="yearField" style="display: none;">
+                        <label class="form-label">Dead Year (1 to 5)</label>
+                        {{ form.dead_year|add_class:"form-control" }}
+                        {% if form.dead_year.errors %}<div class="text-danger small">{{ form.dead_year.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Reason for Application</label>
+                    {{ form.reason|add_class:"form-control"|attr:"rows:5" }}
+                    {% if form.reason.errors %}<div class="text-danger small">{{ form.reason.errors }}</div>{% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-save"></i> Submit Application
+                </button>
+                <a href="{% url 'pass_book:student_detail' student.id %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.querySelector('select[name="application_type"]');
+        const semesterField = document.getElementById('semesterField');
+        const yearField = document.getElementById('yearField');
+
+        function toggleFields() {
+            if (typeSelect.value === 'SEMESTER') {
+                semesterField.style.display = 'block';
+                yearField.style.display = 'none';
+                document.querySelector('input[name="dead_year"]').value = '';
+            } else if (typeSelect.value === 'YEAR') {
+                yearField.style.display = 'block';
+                semesterField.style.display = 'none';
+                document.querySelector('input[name="dead_semester"]').value = '';
+            } else {
+                semesterField.style.display = 'none';
+                yearField.style.display = 'none';
+            }
+        }
+
+        typeSelect.addEventListener('change', toggleFields);
+        toggleFields(); // Initialize on load
+    });
+</script>
+
+{% endblock %}
+
+

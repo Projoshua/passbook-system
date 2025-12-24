@@ -1,0 +1,79 @@
+
+<!-- templates/pass_book/select_student.html -->
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Select Student - Manage Course Units{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="fas fa-user-graduate me-2"></i>Select Student</h2>
+    <p class="text-muted">Search for a student to manage their registered course units.</p>
+
+    <!-- Search Form -->
+    <form method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text"
+                   name="q"
+                   class="form-control form-control-lg"
+                   value="{{ query }}"
+                   placeholder="Search by name or registration number..."
+                   autofocus>
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+
+    <!-- Results -->
+    {% if students %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Reg Number</th>
+                        <th>Semester Code</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                        {% with student.access_numbers.first as access_num %}
+                            <tr>
+                                <td>{{ student.name }}</td>
+                                <td><code>{{ student.registration_number }}</code></td>
+                                <td>
+                                    {% if access_num %}
+                                        <span class="badge bg-info">{{ access_num.access_number }}</span>
+                                        <small class="d-block text-muted">
+                                            Yr {{ access_num.year_of_study }} • {{ access_num.semester }} • {{ access_num.academic_year }}
+                                        </small>
+                                    {% else %}
+                                        <span class="text-danger">No active enrollment</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if access_num %}
+                                        <a href="{% url 'pass_book:student_course_units' access_number=access_num.access_number %}"
+                                           class="btn btn-sm btn-success">
+                                            <i class="fas fa-pen me-1"></i> Manage Units
+                                        </a>
+                                    {% else %}
+                                        <a href="#" class="btn btn-sm btn-outline-secondary disabled">No Access</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% elif query %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h5>No students found matching "{{ query }}"</h5>
+            <a href="." class="btn btn-secondary mt-3">Try Again</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+

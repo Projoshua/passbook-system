@@ -1,0 +1,258 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Semester Code Details</h2>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Semester Code: {{ access_num.access_number }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Student:</strong> {{ access_num.student.name }}</p>
+                    <p><strong>Program:</strong> {{ access_num.student.program.name }}</p>
+                    <p><strong>Admission Year:</strong> {{ access_num.student.admission_year }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Academic Year:</strong> {{ access_num.academic_year.year_label }}</p>
+                    <p><strong>Semester:</strong> {{ access_num.semester }}</p>
+                    <p><strong>Year of Study:</strong> {{ access_num.year_of_study }}</p>
+                    <p><strong>Status:</strong>
+                        {% if access_num.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Semester Registration -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Semester Registration</h5>
+        </div>
+        <div class="card-body">
+            {% if semester_registration %}
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Finance Clearance</h6>
+                        <p><strong>Cleared:</strong> {% if semester_registration.finance_cleared %}Yes{% else %}No{% endif %}</p>
+                        {% if semester_registration.finance_cleared %}
+                            <p><strong>Officer:</strong> {{ semester_registration.finance_officer_name }}</p>
+                            <p><strong>Date:</strong> {{ semester_registration.finance_clearance_date }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Academic Clearance</h6>
+                        <p><strong>Cleared:</strong> {% if semester_registration.academic_cleared %}Yes{% else %}No{% endif %}</p>
+                        {% if semester_registration.academic_cleared %}
+                            <p><strong>Officer:</strong> {{ semester_registration.academic_officer_name }}</p>
+                            <p><strong>Date:</strong> {{ semester_registration.academic_clearance_date }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Orientation & Assimilation</h6>
+                        <p><strong>Orientation Cleared:</strong> {% if semester_registration.orientation_cleared %}Yes{% else %}No{% endif %}</p>
+                        <p><strong>Assimilation Cleared:</strong> {% if semester_registration.assimilation_cleared %}Yes{% else %}No{% endif %}</p>
+                        <p><strong>Items Received:</strong></p>
+                        <ul>
+                            <li>Undergrad Gown: {% if semester_registration.undergraduate_gown_received %}✅{% else %}❌{% endif %}</li>
+                            <li>T-Shirt: {% if semester_registration.tshirt_received %}✅{% else %}❌{% endif %}</li>
+                            <li>ID Card: {% if semester_registration.student_id_received %}✅{% else %}❌{% endif %}</li>
+                            <li>Exam Card: {% if semester_registration.examination_card_received %}✅{% else %}❌{% endif %}</li>
+                        </ul>
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-muted">No semester registration record found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Course Units -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Registered Course Units ({{ course_units.count }})</h5>
+        </div>
+        <div class="card-body">
+            {% if course_units %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>HOD Certified</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for scu in course_units %}
+                            <tr>
+                                <td>{{ scu.course_unit.code }}</td>
+                                <td>{{ scu.course_unit.title }}</td>
+                                <td>{{ scu.get_status_display|default:"Pending" }}</td>
+                                <td>{% if scu.hod_certified %}✅{% else %}❌{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No course units registered.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Course Works -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">Course Works ({{ course_works.count }})</h5>
+        </div>
+        <div class="card-body">
+            {% if course_works %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>Score</th>
+                                <th>HOD Certified</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for scw in course_works %}
+                            <tr>
+                                <td>{{ scw.course_work.title }}</td>
+                                <td>{{ scw.get_status_display|default:"Pending" }}</td>
+                                <td>{{ scw.score|default:"-" }}</td>
+                                <td>{% if scw.hod_certified %}✅{% else %}❌{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No course works recorded.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Associations -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">Student Associations ({{ associations.count }})</h5>
+        </div>
+        <div class="card-body">
+            {% if associations %}
+                <ul class="list-group">
+                    {% for sa in associations %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ sa.association.name }}
+                        <span class="badge bg-{{ sa.status|lower }}">{{ sa.get_status_display }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No association memberships recorded.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Medical Registration -->
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Medical Registration</h5>
+        </div>
+        <div class="card-body">
+            {% if medical_registration %}
+                <p><strong>Registered on:</strong> {{ medical_registration.registration_date }}</p>
+                <p><strong>Medical Officer:</strong> {{ medical_registration.medical_officer_name }}</p>
+            {% else %}
+                <p class="text-muted">No medical registration found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- NCHE Registration -->
+    <div class="card mb-4">
+        <div class="card-header bg-purple text-white" style="background-color: #6f42c1;">
+            <h5 class="mb-0">NCHE Registration</h5>
+        </div>
+        <div class="card-body">
+            {% if nche_registration %}
+                <p><strong>Registered on:</strong> {{ nche_registration.registration_date }}</p>
+                <p><strong>Officer:</strong> {{ nche_registration.officer_name }}</p>
+            {% else %}
+                <p class="text-muted">No NCHE registration found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Internship -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Internship Status</h5>
+        </div>
+        <div class="card-body">
+            {% if internship %}
+                <p><strong>Status:</strong> {{ internship.get_status_display }}</p>
+                {% if internship.company_name %}
+                    <p><strong>Company:</strong> {{ internship.company_name }}</p>
+                    <p><strong>Period:</strong> {{ internship.start_date|default:"N/A" }} to {{ internship.end_date|default:"N/A" }}</p>
+                    <p><strong>Supervisor:</strong> {{ internship.supervisor_name }} ({{ internship.supervisor_contact|default:"N/A" }})</p>
+                {% endif %}
+            {% else %}
+                <p class="text-muted">No internship record found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Semester Clearance -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Semester Clearance</h5>
+        </div>
+        <div class="card-body">
+            {% if semester_clearance %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Finance Clearance</h6>
+                        <p><strong>Cleared:</strong> {% if semester_clearance.finance_cleared %}✅ Yes{% else %}❌ No{% endif %}</p>
+                        {% if semester_clearance.finance_cleared %}
+                            <p><strong>Officer:</strong> {{ semester_clearance.finance_officer_name }}</p>
+                            <p><strong>Date:</strong> {{ semester_clearance.finance_clearance_date }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Academic Clearance</h6>
+                        <p><strong>Cleared:</strong> {% if semester_clearance.academic_cleared %}✅ Yes{% else %}❌ No{% endif %}</p>
+                        {% if semester_clearance.academic_cleared %}
+                            <p><strong>Officer:</strong> {{ semester_clearance.academic_officer_name }}</p>
+                            <p><strong>Date:</strong> {{ semester_clearance.academic_clearance_date }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-muted">No semester clearance record found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'pass_book:list' %}" class="btn btn-secondary">← Back to List</a>
+     <a href="{% url 'pass_book:edit_status' access_num.access_number %}" class="btn btn-outline-primary">
+    {% if access_num.is_active %}Deactivate{% else %}Activate{% endif %}
+</a>
+    </div>
+</div>
+{% endblock %}
+
+

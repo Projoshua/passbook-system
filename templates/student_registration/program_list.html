@@ -1,0 +1,97 @@
+
+{% extends 'student_registration/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Academic Programs</h1>
+        <a href="{% url 'pass_book:program_create' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> New Program
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="m-0 font-weight-bold text-primary">Programs</h6>
+                </div>
+                <div class="col-md-6">
+                    <form method="get" class="row g-2">
+                        <div class="col-md-8">
+                            <input
+                                type="text"
+                                name="q"
+                                class="form-control"
+                                placeholder="Search by code or name"
+                                value="{{ request.GET.q }}"
+                            >
+                        </div>
+                        <div class="col-md-4 d-flex">
+                            <button type="submit" class="btn btn-primary me-2 w-100">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <a href="{% url 'pass_book:program_list' %}" class="btn btn-outline-secondary d-none d-md-inline-block">
+                                Reset
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if programs %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Faculty</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for program in programs %}
+                                <tr>
+                                    <td>{{ program.code }}</td>
+                                    <td>{{ program.name }}</td>
+                                    <td>{{ program.faculty }}</td>
+                                    <td>{{ program.duration }} years</td>
+                                    <td>
+                                        {% if program.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex">
+                                            <a href="{% url 'pass_book:program_update' program.pk %}" class="btn btn-sm btn-primary me-2">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'pass_book:program_delete' program.pk %}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% include 'student_registration/pagination.html' %}
+            {% else %}
+                <div class="alert alert-info">
+                    No programs found. <a href="{% url 'pass_book:program_create' %}">Create a new program</a>.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

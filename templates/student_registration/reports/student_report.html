@@ -1,0 +1,93 @@
+
+{% extends "student_registration/reports/base.html" %}
+{% load static %}
+
+{% block report_content %}
+<div class="filters no-print">
+    <h3>Filter Students</h3>
+    <form method="get">
+        <label for="program">Program:</label>
+        <select name="program" id="program">
+            <option value="">All Programs</option>
+            {% for program in programs %}
+            <option value="{{ program.id }}" {% if request.GET.program == program.id|stringformat:"s" %}selected{% endif %}>
+                {{ program.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label for="session">Session:</label>
+        <select name="session" id="session">
+            <option value="">All Sessions</option>
+            {% for code, name in sessions %}
+            <option value="{{ code }}" {% if request.GET.session == code %}selected{% endif %}>
+                {{ name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label for="admission_year">Admission Year:</label>
+        <select name="admission_year" id="admission_year">
+            <option value="">All Years</option>
+            {% for year in years %}
+            <option value="{{ year }}" {% if request.GET.admission_year == year|stringformat:"s" %}selected{% endif %}>
+                {{ year }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <input type="submit" value="Apply Filters">
+    </form>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Registration Number</th>
+            <th>Student Name</th>
+            <th>Program</th>
+            <th>Session</th>
+            <th>Admission Year</th>
+            <th>Contact</th>
+            <th>Guardian Contact</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for student in students %}
+        <tr>
+            <td>{{ student.registration_number }}</td>
+            <td>{{ student.name }}</td>
+            <td>{{ student.program.name }}</td>
+            <td>{{ student.get_session_display }}</td>
+            <td class="text-center">{{ student.admission_year }}</td>
+            <td>{{ student.student_contact }}</td>
+            <td>{{ student.parent_guardian_contact }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">No students found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="pagination no-print">
+    <span class="step-links">
+        {% if students.has_previous %}
+            <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; first</a>
+            <a href="?page={{ students.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ students.number }} of {{ students.paginator.num_pages }}.
+        </span>
+
+        {% if students.has_next %}
+            <a href="?page={{ students.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">next</a>
+            <a href="?page={{ students.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+{% endblock %}
+
+

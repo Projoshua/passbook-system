@@ -1,0 +1,68 @@
+
+<!-- templates/students/student_course_unit_form_single.html -->
+{% extends 'student_registration/base.html' %}
+
+{% block title %}{% if object %}Edit{% else %}Add{% endif %} Course Unit{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if object %}Edit{% else %}Add{% endif %} Course Unit</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Course Unit</label>
+                    {{ form.course_unit }}
+                    {% if form.course_unit.errors %}<div class="text-danger">{{ form.course_unit.errors }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    {{ form.status }}
+                    {% if form.status.errors %}<div class="text-danger">{{ form.status.errors }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3 form-check">
+                    {{ form.hod_certified }}
+                    <label class="form-check-label">HOD Certified?</label>
+                    {% if form.hod_certified.errors %}<div class="text-danger">{{ form.hod_certified.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">HOD Name</label>
+                    {{ form.hod_name }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Designation</label>
+                    {{ form.hod_designation }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Department</label>
+                    {{ form.hod_department }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Certification Date</label>
+                    {{ form.hod_certification_date }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Signature</label>
+                    {{ form.hod_signature }}
+                    {% if form.hod_signature.value %}
+                        <div><a href="{{ form.hod_signature.value.url }}" target="_blank">Current File</a></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+        <a href="{% url 'pass_book:student_course_units' access_number=access_number.access_number %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,134 @@
+
+{% extends 'student_registration/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+    .bg-info {
+        background-color: #d1ecf1 !important;
+    }
+    .card-shadow {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+</style>
+{% endblock %}
+
+{% block title %}
+    {% if registration %}
+        Edit NCHE Registration - {{ access_number.access_number }}
+    {% else %}
+        NCHE Registration - {{ access_number.access_number }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-graduate me-2"></i>
+                        {% if registration %}
+                            Edit NCHE Registration
+                        {% else %}
+                            NCHE Registration
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Student Information Display -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="bg-light p-3 rounded">
+                                <h6 class="text-muted mb-2">Student Information</h6>
+                                <p class="mb-1"><strong>Access Number:</strong> {{ access_number.access_number }}</p>
+                                <p class="mb-1"><strong>Student Name:</strong> {{ access_number.student.name }}</p>
+                                <p class="mb-1"><strong>Academic Year:</strong> {{ access_number.academic_year }}</p>
+                                <p class="mb-0"><strong>Semester:</strong> {{ access_number.semester }}</p>
+                            </div>
+                        </div>
+                        {% if registration %}
+                        <div class="col-md-6">
+                            <div class="bg-info bg-opacity-10 p-3 rounded">
+                                <h6 class="text-info mb-2">Registration Status</h6>
+                                <p class="mb-1"><strong>Registration Date:</strong> {{ registration.registration_date|date:"M d, Y" }}</p>
+                                <p class="mb-0"><strong>Status:</strong> <span class="badge bg-success">Registered</span></p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Registration Form -->
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Officer Name -->
+                        <div class="mb-3">
+                            <label for="{{ form.officer_name.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-1"></i>Officer Name <span class="text-danger">*</span>
+                            </label>
+                            {{ form.officer_name }}
+                            {% if form.officer_name.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.officer_name.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Officer Signature -->
+                        <div class="mb-3">
+                            <label for="{{ form.officer_signature.id_for_label }}" class="form-label">
+                                <i class="fas fa-signature me-1"></i>Officer Signature
+                            </label>
+                            {{ form.officer_signature }}
+                            {% if registration.officer_signature %}
+                                <div class="mt-2">
+                                    <small class="text-muted">Current signature:</small><br>
+                                    <img src="{{ registration.officer_signature.url }}" alt="Officer Signature" 
+                                         class="img-thumbnail" style="max-height: 100px;">
+                                </div>
+                            {% endif %}
+                            {% if form.officer_signature.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.officer_signature.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'pass_book:detail' access_number=access_number.access_number %}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Back
+                            </a>
+                            
+                            <div>
+                                {% if registration %}
+                                    <a href="{% url 'pass_book:nche_registration_delete' access_number=access_number.access_number %}" 
+                                       class="btn btn-danger me-2">
+                                        <i class="fas fa-trash me-1"></i>Delete
+                                    </a>
+                                {% endif %}
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>
+                                    {% if registration %}Update{% else %}Register{% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

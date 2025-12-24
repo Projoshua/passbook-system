@@ -1,0 +1,29 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Delete Academic Year - Student Passbook{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>
+        <i class="fas fa-trash me-3"></i>Delete Academic Year
+    </h1>
+</div>
+
+<div class="card card-custom">
+    <div class="card-body">
+        <p>Are you sure you want to delete the academic year <strong>{{ object.year_label }}</strong>?</p>
+        <p>This action cannot be undone.</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex gap-2">
+                <a href="{% url 'pass_book:academic_year_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-danger">Delete Academic Year</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+

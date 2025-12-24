@@ -1,0 +1,79 @@
+
+{% extends "student_registration/reports/base.html" %}
+{% load static %}
+
+{% block report_content %}
+<div class="filters no-print">
+    <h3>Filter Course Unit Registrations</h3>
+    <form method="get">
+        <label for="semester">Semester:</label>
+        <select name="semester" id="semester">
+            <option value="">All Semesters</option>
+            {% for semester in semesters %}
+            <option value="{{ semester.id }}" {% if request.GET.semester == semester.id|stringformat:"s" %}selected{% endif %}>
+                {{ semester }} ({{ semester.academic_year.year_label }})
+            </option>
+            {% endfor %}
+        </select>
+
+        <label for="status">Status:</label>
+        <select name="status" id="status">
+            <option value="">All Statuses</option>
+            {% for code, name in statuses %}
+            <option value="{{ code }}" {% if request.GET.status == code %}selected{% endif %}>
+                {{ name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label for="course_unit">Course Unit:</label>
+        <select name="course_unit" id="course_unit">
+            <option value="">All Course Units</option>
+            {% for cu in course_units %}
+            <option value="{{ cu.id }}" {% if request.GET.course_unit == cu.id|stringformat:"s" %}selected{% endif %}>
+                {{ cu.code }} - {{ cu.title }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <input type="submit" value="Apply Filters">
+    </form>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Access Number</th>
+            <th>Student Name</th>
+            <th>Course Unit</th>
+            <th>Semester</th>
+            <th>Status</th>
+            <th>HOD Certified</th>
+            <th>HOD Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for reg in course_registrations %}
+        <tr>
+            <td>{{ reg.access_number.access_number }}</td>
+            <td>{{ reg.access_number.student.name }}</td>
+            <td>{{ reg.course_unit.code }}<br><small>{{ reg.course_unit.title }}</small></td>
+            <td>{{ reg.access_number.semester }}</td>
+            <td class="{% if reg.status == 'PASSED' %}status-approved{% elif reg.status == 'RETAKE' %}status-pending{% else %}status-rejected{% endif %}">
+                {{ reg.get_status_display|default:"Not Set" }}
+            </td>
+            <td class="text-center {% if reg.hod_certified %}status-approved{% else %}status-pending{% endif %}">
+                {{ reg.hod_certified|yesno:"Yes,No" }}
+            </td>
+            <td>{{ reg.hod_name|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">No course unit registrations found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+

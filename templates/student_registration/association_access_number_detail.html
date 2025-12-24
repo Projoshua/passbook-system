@@ -1,0 +1,124 @@
+
+<!-- templates/students/access_number_detail.html -->
+{% extends 'student_registration/base.html' %}
+{% load static %}
+
+{% block title %}Student Profile: {{ access_number.access_number }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+      <span class="badge bg-primary">{{ access_number.access_number }}</span>
+    </h2>
+    <div class="d-flex gap-2">
+      <a href="{% url 'pass_book:student_associations' access_number=access_number.access_number %}" 
+         class="btn btn-outline-primary">
+        <i class="bi bi-people"></i> Manage Associations
+      </a>
+      <!-- Optional: Add Edit Student or Print buttons later -->
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="row">
+    <!-- Student Info Card -->
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">Student Information</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Name:</strong> {{ access_number.student.name }}</li>
+            <li class="list-group-item"><strong>Program:</strong> {{ access_number.student.program.name }}</li>
+            <li class="list-group-item"><strong>Year of Study:</strong> Year {{ access_number.year_of_study }}</li>
+            <li class="list-group-item"><strong>Generated:</strong> {{ access_number.generated_date|date:"M j, Y" }}</li>
+            <li class="list-group-item">
+              <strong>Status:</strong>
+              <span class="badge bg-{{ access_number.is_active|yesno:'success,danger' }}">
+                {{ access_number.is_active|yesno:"Active,Inactive" }}
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Academic Info Card -->
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header bg-secondary text-white">
+          <h5 class="mb-0">Academic Information</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Academic Year:</strong> {{ access_number.academic_year.year }}</li>
+            <li class="list-group-item"><strong>Semester:</strong> {{ access_number.semester.name }} ({{ access_number.semester.semester_code }})</li>
+            <li class="list-group-item"><strong>Start Date:</strong> {{ access_number.semester.start_date|date:"M j, Y" }}</li>
+            <li class="list-group-item"><strong>End Date:</strong> {{ access_number.semester.end_date|date:"M j, Y" }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Association Memberships Section -->
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Current Association Memberships ({{ memberships.count }})</h5>
+      {% if memberships %}
+        <small>
+          <a href="{% url 'pass_book:student_associations' access_number=access_number.access_number %}" class="text-white">
+            Edit Memberships →
+          </a>
+        </small>
+      {% endif %}
+    </div>
+    <div class="card-body">
+      {% if memberships %}
+        <div class="row">
+          {% for membership in memberships %}
+            <div class="col-md-6 col-lg-4 mb-3">
+              <div class="card h-100 {% if membership.status == 'INACTIVE' %}border-danger{% else %}border-success{% endif %}">
+                <div class="card-body">
+                  <h6 class="card-title">{{ membership.association.name }}</h6>
+                  <p class="card-text">
+                    <strong>Type:</strong> {{ membership.association.get_association_type_display }}<br>
+                    <strong>Status:</strong>
+                    <span class="badge bg-{{ membership.status|lower }}">{{ membership.get_status_display }}</span><br>
+                    <strong>Joined:</strong> {{ membership.join_date|date:"M j, Y" }}
+                  </p>
+                  {% if membership.dos_certified %}
+                    <div class="alert alert-success small p-2 mb-0">
+                      ✅ Certified by: {{ membership.dos_name }}<br>
+                      <small>{{ membership.dos_designation }}, {{ membership.dos_department }}</small>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted">No association memberships yet.</p>
+        <a href="{% url 'pass_book:student_associations' access_number=access_number.access_number %}" class="btn btn-sm btn-outline-primary">
+          Add First Membership
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Optional: Add more sections later (Grades, Fees, Attendance, etc.) -->
+</div>
+{% endblock %}
+
+

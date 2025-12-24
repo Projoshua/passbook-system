@@ -1,0 +1,294 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}{{ action }} Graduation Clearance - {{ student.name }} - SLAU{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        border-left: 4px solid #27ae60;
+        padding-left: 1rem;
+        margin: 1.5rem 0;
+    }
+    .signature-preview {
+        max-width: 200px;
+        max-height: 100px;
+        border: 1px solid #ddd;
+        padding: 0.5rem;
+        background: #f8f9fa;
+    }
+    .required-field {
+        color: #e74c3c;
+    }
+    .student-info-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-left: 4px solid #3498db;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-graduation-cap me-2"></i>{{ action }} Graduation Clearance</h2>
+    <p class="text-muted">Managing graduation requirements and approvals for <strong>{{ student.name }}</strong></p>
+</div>
+
+<!-- Student Info Banner -->
+<div class="card card-custom mb-4">
+    <div class="card-header student-info-header">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="mb-1"><i class="fas fa-user me-2"></i>{{ student.name }}</h5>
+                <div class="text-muted">
+                    <small>
+                        <i class="fas fa-id-card me-1"></i>{{ student.registration_number|default:"N/A" }} |
+                        <i class="fas fa-barcode me-1"></i>{{ student.static_access_number }}
+                    </small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="text-muted small">
+                    <div><i class="fas fa-book me-2"></i>{{ student.program.name }}</div>
+                    <div><i class="fas fa-calendar me-2"></i>{{ student.admission_year }} - {{ student.get_session_display }}</div>
+                    <div><i class="fas fa-flag me-2"></i>{{ student.nationality }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Graduation Clearance Form -->
+<div class="card card-custom">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Graduation Clearance Form</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            
+            <!-- Requirements Status -->
+            <div class="form-section">
+                <h6 class="text-success mb-3"><i class="fas fa-tasks me-2"></i>Requirements Status</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check form-switch mb-3">
+                            {{ form.all_requirements_met }}
+                            <label class="form-check-label" for="{{ form.all_requirements_met.id_for_label }}">
+                                <strong>All Graduation Requirements Met</strong>
+                                <span class="required-field">*</span>
+                            </label>
+                            {% if form.all_requirements_met.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.all_requirements_met.errors %}
+                                <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Check this when all academic and administrative requirements are satisfied
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="{{ form.clearance_date.id_for_label }}" class="form-label">
+                                Clearance Date
+                            </label>
+                            {{ form.clearance_date }}
+                            {% if form.clearance_date.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.clearance_date.errors %}
+                                <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Date when all requirements were verified as complete
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approving Officer -->
+            <div class="form-section">
+                <h6 class="text-primary mb-3"><i class="fas fa-user-tie me-2"></i>Approving Officer Information</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="{{ form.approving_officer_name.id_for_label }}" class="form-label">
+                                Officer Name <span class="required-field">*</span>
+                            </label>
+                            {{ form.approving_officer_name }}
+                            {% if form.approving_officer_name.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.approving_officer_name.errors %}
+                                <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="{{ form.approving_officer_designation.id_for_label }}" class="form-label">
+                                Officer Designation <span class="required-field">*</span>
+                            </label>
+                            {{ form.approving_officer_designation }}
+                            {% if form.approving_officer_designation.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.approving_officer_designation.errors %}
+                                <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="{{ form.approving_officer_signature.id_for_label }}" class="form-label">
+                                Officer Signature
+                            </label>
+                            {{ form.approving_officer_signature }}
+                            {% if form.approving_officer_signature.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.approving_officer_signature.errors %}
+                                <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Upload digital signature image (PNG, JPG recommended)
+                            </div>
+                            
+                            {% if clearance and clearance.approving_officer_signature %}
+                            <div class="mt-2">
+                                <small class="text-muted">Current signature:</small><br>
+                                <img src="{{ clearance.approving_officer_signature.url }}" 
+                                     alt="Current signature" class="signature-preview">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="border-top pt-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <button type="submit" class="btn btn-primary-custom btn-lg">
+                            <i class="fas fa-save me-2"></i>{{ action }} Clearance
+                        </button>
+                        <a href="{% url 'pass_book:student_selection_view' %}" class="btn btn-outline-secondary btn-lg ms-2">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                    {% if clearance %}
+                    <div class="col-md-6 text-end">
+                        <a href="{% url 'pass_book:graduation_clearance_detail' student.pk %}" class="btn btn-outline-info">
+                            <i class="fas fa-eye me-2"></i>View Details
+                        </a>
+                        {% if clearance.all_requirements_met %}
+                        <a href="{% url 'pass_book:graduation_certificate_view' student.pk %}" class="btn btn-outline-success">
+                            <i class="fas fa-certificate me-2"></i>Generate Certificate
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Guidelines -->
+<div class="card card-custom mt-4">
+    <div class="card-header">
+        <h6 class="mb-0"><i class="fas fa-question-circle me-2"></i>Guidelines</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-primary">Requirements Checklist:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check-circle text-success me-2"></i>All course credits completed</li>
+                    <li><i class="fas fa-check-circle text-success me-2"></i>Final project/thesis submitted</li>
+                    <li><i class="fas fa-check-circle text-success me-2"></i>Library clearance obtained</li>
+                    <li><i class="fas fa-check-circle text-success me-2"></i>Financial obligations cleared</li>
+                    <li><i class="fas fa-check-circle text-success me-2"></i>Student conduct record clean</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-warning">Important Notes:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Verify all information before approval</li>
+                    <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Digital signatures are legally binding</li>
+                    <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Clearance date cannot be future dated</li>
+                    <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Once cleared, changes require authorization</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const reqMet = document.getElementById('id_all_requirements_met');
+        const dateField = document.getElementById('id_clearance_date');
+        
+        if (reqMet && dateField) {
+            reqMet.addEventListener('change', function() {
+                if (this.checked && !dateField.value) {
+                    const today = new Date().toISOString().split('T')[0];
+                    dateField.value = today;
+                }
+            });
+        }
+
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const reqMet = document.getElementById('id_all_requirements_met')?.checked;
+                const name = document.getElementById('id_approving_officer_name')?.value.trim();
+                const designation = document.getElementById('id_approving_officer_designation')?.value.trim();
+                
+                if (reqMet && (!name || !designation)) {
+                    e.preventDefault();
+                    alert('Officer name and designation are required when marking requirements as met.');
+                }
+            });
+        }
+
+        const sigInput = document.getElementById('id_approving_officer_signature');
+        if (sigInput) {
+            sigInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const existing = document.querySelector('.new-sig-preview');
+                        if (existing) existing.remove();
+                        
+                        const div = document.createElement('div');
+                        div.className = 'mt-2 new-sig-preview';
+                        div.innerHTML = `
+                            <small class="text-muted">New signature preview:</small><br>
+                            <img src="${e.target.result}" alt="Signature preview" class="signature-preview">
+                        `;
+                        e.target.parentNode.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
+
+

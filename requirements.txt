@@ -1,0 +1,11 @@
+Django>=5.2.6,<6.0
+psycopg2-binary>=2.9.0  # You installed this locally, include it
+boto3>=1.26.0
+django-storages>=1.13.0 # You installed this locally, include it
+gunicorn>=20.1.0
+Pillow>=10.0.0 # You installed this locally, include it if needed by your apps
+django-ratelimit>=4.0.0 # You installed this locally, include it if needed by your apps
+# Add any other specific dependencies your project needsdjango-widget-tweaks
+django-widget-tweaks==1.5.0
+djangorestframework>=3.14.0
+requests>=2.31.0

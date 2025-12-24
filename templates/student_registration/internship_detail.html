@@ -1,0 +1,362 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Internship Details - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-eye"></i> Internship Details</h1>
+        <div>
+            {% if internship %}
+                <a href="{% url 'pass_book:internship_edit' access_number.access_number %}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+            {% else %}
+                <a href="{% url 'pass_book:internship_edit' access_number.access_number %}" class="btn btn-success">
+                    <i class="bi bi-plus"></i> Add Internship
+                </a>
+            {% endif %}
+            <a href="{% url 'pass_book:student_search' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Search
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Student Information -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person-badge"></i> Student Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Name:</strong><br>
+                        <span class="fs-5 text-primary">{{ student.name }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Access Number:</strong><br>
+                        <code class="fs-6 bg-light p-2 rounded">{{ access_number.access_number }}</code>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Email:</strong><br>
+                        {% if student.email %}
+                            <a href="mailto:{{ student.email }}" class="text-decoration-none">
+                                <i class="bi bi-envelope"></i> {{ student.email }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Academic Year:</strong><br>
+                        {{ access_number.academic_year.name }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Semester:</strong><br>
+                        {{ access_number.semester.name }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Year of Study:</strong><br>
+                        Year {{ access_number.year_of_study }}
+                    </div>
+                    
+                    <div class="mb-0">
+                        <strong>Generated Date:</strong><br>
+                        <small class="text-muted">{{ access_number.generated_date|date:"M j, Y g:i A" }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if internship %}
+                            <a href="{% url 'pass_book:internship_edit' access_number.access_number %}" 
+                               class="btn btn-primary btn-sm">
+                                <i class="bi bi-pencil"></i> Edit Internship
+                            </a>
+                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="bi bi-trash"></i> Delete Record
+                            </button>
+                        {% else %}
+                            <a href="{% url 'pass_book:internship_edit' access_number.access_number %}" 
+                               class="btn btn-success btn-sm">
+                                <i class="bi bi-plus"></i> Add Internship
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'pass_book:student_search' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-search"></i> Find Other Students
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Internship Information -->
+        <div class="col-md-8">
+            {% if internship %}
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-briefcase"></i> Internship Information</h5>
+                        {% if internship.status == 'DONE' %}
+                            <span class="badge bg-success fs-6">Completed</span>
+                        {% else %}
+                            <span class="badge bg-danger fs-6">Not Done</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <!-- Status Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted border-bottom pb-2">Status</h6>
+                                <div class="mb-3">
+                                    <strong>Current Status:</strong><br>
+                                    {% if internship.status == 'DONE' %}
+                                        <span class="badge bg-success fs-6">
+                                            <i class="bi bi-check-circle"></i> Completed
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger fs-6">
+                                            <i class="bi bi-x-circle"></i> Not Done
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Company Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted border-bottom pb-2">Company Information</h6>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <strong>Company Name:</strong><br>
+                                        {% if internship.company_name %}
+                                            <span class="fs-5">{{ internship.company_name }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Not specified</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Duration -->
+                        {% if internship.start_date or internship.end_date %}
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted border-bottom pb-2">Duration</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Start Date:</strong><br>
+                                        {% if internship.start_date %}
+                                            <i class="bi bi-calendar-event text-success"></i>
+                                            {{ internship.start_date|date:"F j, Y" }}
+                                        {% else %}
+                                            <span class="text-muted">Not specified</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>End Date:</strong><br>
+                                        {% if internship.end_date %}
+                                            <i class="bi bi-calendar-x text-danger"></i>
+                                            {{ internship.end_date|date:"F j, Y" }}
+                                        {% else %}
+                                            <span class="text-muted">Not specified</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% if internship.start_date and internship.end_date %}
+                                <div class="alert alert-info mt-3">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong>Duration:</strong> 
+                                    {{ internship.duration_days }} days ({{ internship.duration_weeks }} weeks)
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Supervisor Information -->
+                        {% if internship.supervisor_name or internship.supervisor_contact %}
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted border-bottom pb-2">Supervisor Information</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Supervisor Name:</strong><br>
+                                        {% if internship.supervisor_name %}
+                                            <i class="bi bi-person-check"></i>
+                                            {{ internship.supervisor_name }}
+                                        {% else %}
+                                            <span class="text-muted">Not specified</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Contact Information:</strong><br>
+                                        {% if internship.supervisor_contact %}
+                                            <i class="bi bi-telephone"></i>
+                                            {{ internship.supervisor_contact }}
+                                        {% else %}
+                                            <span class="text-muted">Not specified</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Summary Card -->
+                        {% if internship.status == 'DONE' and internship.company_name and internship.start_date and internship.end_date %}
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="alert alert-success">
+                                    <h6><i class="bi bi-check-circle"></i> Internship Completed</h6>
+                                    <p class="mb-0">
+                                        <strong>{{ student.name }}</strong> successfully completed a 
+                                        <strong>{{ internship.duration_weeks }} week</strong> 
+                                        internship at <strong>{{ internship.company_name }}</strong>
+                                        {% if internship.supervisor_name %}
+                                            under the supervision of <strong>{{ internship.supervisor_name }}</strong>
+                                        {% endif %}.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Record Information -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="text-muted border-bottom pb-2">Record Information</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>Record Created:</strong><br>
+                                            {{ internship.access_number.generated_date|date:"F j, Y g:i A" }}
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>Access Number Status:</strong><br>
+                                            {% if access_number.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <!-- No Internship Record -->
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-briefcase-fill fs-1 text-muted mb-3"></i>
+                        <h4 class="text-muted">No Internship Record</h4>
+                        <p class="text-muted mb-4">
+                            No internship information has been recorded for <strong>{{ student.name }}</strong> yet.
+                        </p>
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                Access Number: <code>{{ access_number.access_number }}</code><br>
+                                Academic Year: {{ access_number.academic_year.name }} - {{ access_number.semester.name }}<br>
+                                Year of Study: {{ access_number.year_of_study }}
+                            </small>
+                        </div>
+                        <a href="{% url 'pass_book:internship_edit' access_number.access_number %}" 
+                           class="btn btn-success btn-lg">
+                            <i class="bi bi-plus-circle"></i> Add Internship Record
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if internship %}
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle text-danger"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this internship record?</p>
+                <div class="alert alert-warning">
+                    <strong>Student:</strong> {{ student.name }}<br>
+                    <strong>Access Number:</strong> {{ access_number.access_number }}<br>
+                    <strong>Company:</strong> {{ internship.company_name|default:"Not specified" }}
+                </div>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This action cannot be undone. All internship information will be permanently removed.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </button>
+                <a href="{% url 'pass_book:internship_delete' access_number.access_number %}" 
+                   class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Delete Permanently
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{%endblock%}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add smooth scrolling for any anchor links
+    const anchorLinks = document.querySelectorAll('a[href^="#"]');
+    anchorLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+
+    // Auto-refresh functionality (optional)
+    // Uncomment to enable auto-refresh every 5 minutes
+    /*
+    setInterval(function() {
+        if (!document.hidden) {
+            location.reload();
+        }
+    }, 300000); // 5 minutes
+    */
+});
+</script>
+{% endblock %}
+
+

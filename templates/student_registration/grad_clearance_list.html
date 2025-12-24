@@ -1,0 +1,349 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Graduation Clearances - SLAU{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-badge.cleared {
+        background-color: #27ae60;
+        color: white;
+    }
+    .status-badge.pending {
+        background-color: #f39c12;
+        color: #000;
+    }
+    .table thead {
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: white;
+    }
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.775rem;
+    }
+    .stat-card {
+        background: linear-gradient(135deg, #3498db, #5dade2);
+        color: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-list me-2"></i>Graduation Clearances</h2>
+    <p class="text-muted">Comprehensive list of all student graduation clearances</p>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h5>Total Clearances</h5>
+            <h2>{{ total_count }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h5>Cleared</h5>
+            <h2 id="clearedCount">-</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h5>Pending</h5>
+            <h2 id="pendingCount">-</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h5>Cleared Today</h5>
+            <h2 id="todayCount">-</h2>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="card card-custom mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Search & Filter Clearances</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Student name, registration, officer..." 
+                       value="{{ search_query }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="cleared" {% if status_filter == 'cleared' %}selected{% endif %}>Cleared</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Program</label>
+                <select name="program" class="form-select">
+                    <option value="">All Programs</option>
+                    {% for program in programs %}
+                    <option value="{{ program.id }}" {% if program.id|stringformat:'s' == program_filter %}selected{% endif %}>
+                        {{ program.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Year</label>
+                <select name="year" class="form-select">
+                    <option value="">All Years</option>
+                    {% for year in years %}
+                    <option value="{{ year }}" {% if year|stringformat:'s' == year_filter %}selected{% endif %}>
+                        {{ year }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary-custom w-100" style="margin-top: 1.95rem;">
+                    <i class="fas fa-search me-2"></i>Search
+                </button>
+            </div>
+            <div class="col-12">
+                <a href="{% url 'pass_book:graduation_clearance_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>Clear Filters
+                </a>
+                <button type="button" class="btn btn-success ms-2" onclick="exportToCSV()">
+                    <i class="fas fa-download me-2"></i>Export CSV
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Clearances Table -->
+<div class="card card-custom">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Program</th>
+                    <th>Admission Year</th>
+                    <th>Status</th>
+                    <th>Clearance Date</th>
+                    <th>Approving Officer</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for clearance in page_obj %}
+                <tr>
+                    <td>
+                        <div>
+                            <strong>{{ clearance.student.name }}</strong><br>
+                            <small class="text-muted">
+                                {{ clearance.student.registration_number|default:"N/A" }}<br>
+                                {{ clearance.student.static_access_number }}
+                            </small>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-info">{{ clearance.student.program.name }}</span><br>
+                        <small class="text-muted">{{ clearance.student.get_session_display }}</small>
+                    </td>
+                    <td class="text-center">
+                        <strong>{{ clearance.student.admission_year }}</strong>
+                    </td>
+                    <td>
+                        {% if clearance.all_requirements_met %}
+                        <span class="badge status-badge cleared">
+                            <i class="fas fa-check-circle me-1"></i>Cleared
+                        </span>
+                        {% else %}
+                        <span class="badge status-badge pending">
+                            <i class="fas fa-clock me-1"></i>Pending
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if clearance.clearance_date %}
+                        {{ clearance.clearance_date|date:"M d, Y" }}
+                        {% else %}
+                        <span class="text-muted">Not Set</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if clearance.approving_officer_name %}
+                        <strong>{{ clearance.approving_officer_name }}</strong><br>
+                        <small class="text-muted">{{ clearance.approving_officer_designation }}</small>
+                        {% else %}
+                        <span class="text-muted">Not Assigned</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{% url 'pass_book:graduation_clearance_detail' clearance.student.pk %}" 
+                               class="btn btn-outline-info" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'pass_book:graduation_clearance_edit' clearance.student.pk %}" 
+                               class="btn btn-outline-warning" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% if clearance.all_requirements_met %}
+                            <a href="{% url 'pass_book:graduation_certificate_view' clearance.student.pk %}" 
+                               class="btn btn-outline-success" title="Certificate">
+                                <i class="fas fa-certificate"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No graduation clearances found matching your criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Clearances pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+        </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateStats() {
+        const rows = document.querySelectorAll('tbody tr');
+        let clearedCount = 0, pendingCount = 0, todayCount = 0;
+        const today = new Date().toDateString();
+
+        rows.forEach(row => {
+            const statusBadge = row.querySelector('.status-badge');
+            const dateCell = row.cells[4];
+            if (!statusBadge) return;
+
+            if (statusBadge.classList.contains('cleared')) {
+                clearedCount++;
+                const dateText = dateCell.textContent.trim();
+                if (dateText && dateText !== 'Not Set') {
+                    const clearanceDate = new Date(dateText);
+                    if (clearanceDate.toDateString() === today) todayCount++;
+                }
+            } else if (statusBadge.classList.contains('pending')) {
+                pendingCount++;
+            }
+        });
+
+        document.getElementById('clearedCount').textContent = clearedCount;
+        document.getElementById('pendingCount').textContent = pendingCount;
+        document.getElementById('todayCount').textContent = todayCount;
+    }
+
+    function exportToCSV() {
+        const table = document.querySelector('table');
+        const rows = Array.from(table.querySelectorAll('tr'));
+        let csv = [];
+
+        const headers = ['Student Name', 'Registration Number', 'Access Number', 'Program', 'Session', 'Admission Year', 'Status', 'Clearance Date', 'Officer Name', 'Officer Designation'];
+        csv.push(headers.join(','));
+
+        rows.slice(1).forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length === 0) return;
+
+            const studentCell = cells[0];
+            const studentName = studentCell.querySelector('strong').textContent.trim();
+            const studentDetails = studentCell.querySelector('small').textContent.trim().split('\n');
+            const regNumber = studentDetails[0] || '';
+            const accessNumber = studentDetails[1] || '';
+
+            const programCell = cells[1];
+            const program = programCell.querySelector('.badge').textContent.trim();
+            const session = programCell.querySelector('small').textContent.trim();
+
+            const year = cells[2].textContent.trim();
+            const status = cells[3].querySelector('.badge').textContent.trim();
+            const date = cells[4].textContent.trim();
+
+            const officerCell = cells[5];
+            let officerName = '', officerDesignation = '';
+            if (!officerCell.textContent.includes('Not Assigned')) {
+                const officerStrong = officerCell.querySelector('strong');
+                const officerSmall = officerCell.querySelector('small');
+                officerName = officerStrong ? officerStrong.textContent.trim() : '';
+                officerDesignation = officerSmall ? officerSmall.textContent.trim() : '';
+            }
+
+            csv.push([
+                `"${studentName}"`,
+                `"${regNumber}"`,
+                `"${accessNumber}"`,
+                `"${program}"`,
+                `"${session}"`,
+                `"${year}"`,
+                `"${status}"`,
+                `"${date}"`,
+                `"${officerName}"`,
+                `"${officerDesignation}"`
+            ].join(','));
+        });
+
+        const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `graduation_clearances_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    document.addEventListener('DOMContentLoaded', calculateStats);
+</script>
+{% endblock %}
+
+

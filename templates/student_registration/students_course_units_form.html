@@ -1,0 +1,63 @@
+
+<!-- templates/student_registration/students_course_units_form.html -->
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Register Course Units - {{ access_number.access_number }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Register Course Units</h2>
+  <p><strong>Student:</strong> {{ student.get_full_name }} ({{ access_number.access_number }})</p>
+
+  {% if formset.non_form_errors %}
+    <div class="alert alert-danger">
+      {{ formset.non_form_errors }}
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Course Unit</th>
+          <th>Status</th>
+          <th>HOD Certified?</th>
+          <th>HOD Name</th>
+          <th>Designation</th>
+          <th>Department</th>
+          <th>Certification Date</th>
+          <th>Signature</th>
+          <th>Delete?</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ formset.management_form }}
+        {% for form in formset %}
+        <tr>
+          {% for field in form.visible_fields %}
+          <td>
+            {{ field }}
+            {% if field.errors %}
+              <div class="text-danger small">{{ field.errors }}</div>
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary">Save Course Units</button>
+    <a href="{% url 'pass_book:student_course_units' access_num_id=access_number.access_number %}" class="btn btn-secondary">Back</a>
+  </form>
+</div>
+
+<script>
+// Optional: Disable already selected course units dynamically
+// You can enhance this with JS later
+</script>
+{% endblock %}
+
+

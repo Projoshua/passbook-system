@@ -1,0 +1,41 @@
+
+{% if is_paginated %}
+<div class="d-flex justify-content-between align-items-center mt-3 flex-column flex-md-row">
+    <div class="mb-2 mb-md-0 text-muted">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        &middot;
+        Showing {{ page_obj|length }} of {{ page_obj.paginator.count }} entries
+    </div>
+    <nav aria-label="Page navigation">
+        {% with request.GET.urlencode as query %}
+        <ul class="pagination mb-0">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% if query %}{{ query }}&{% endif %}page=1">&laquo; First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?{% if query %}{{ query }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    {{ page_obj.number }}
+                </span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% if query %}{{ query }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?{% if query %}{{ query }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+        {% endwith %}
+    </nav>
+</div>
+{% endif %}
+
+

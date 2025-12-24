@@ -1,0 +1,17 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block content %}
+<h2>Confirm Deactivation</h2>
+
+<p>Are you sure you want to deactivate access number <strong>{{ access_num.access_number }}</strong>?</p>
+<p>This will prevent it from being used but will NOT delete the record.</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, Deactivate</button>
+    <a href="{% url 'pass_book:list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}
+
+

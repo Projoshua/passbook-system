@@ -1,0 +1,17 @@
+
+<!-- templates/students/student_confirm_delete.html -->
+{% extends "student_registration/base.html" %}
+{% block content %}
+
+<h2>Delete Student</h2>
+<p>Are you sure you want to delete <strong>{{ object.name }}</strong> ({{ object.registration_number }})?</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Yes, Delete</button>
+  <a href="{% url 'pass_book:student_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+
+{% endblock %}
+
+

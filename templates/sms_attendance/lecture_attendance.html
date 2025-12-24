@@ -1,0 +1,53 @@
+
+<!-- templates/sms_attendance/lecture_attendance.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Attendance for {{ lecture.name }}</h2>
+    <p class="lead">{{ lecture.code }} - {{ lecture.start_time|date:"M d, Y" }}</p>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Verification Time</th>
+                    <th>Status</th>
+                    <th>Verification Code</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance_records %}
+                <tr>
+                    <td>{{ record.student.get_full_name }}</td>
+                    <td>
+                        {% if record.verification_time %}
+                            {{ record.verification_time|date:"M d, Y H:i" }}
+                        {% else %}
+                            <span class="text-muted">Not verified</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge bg-{% if record.verified %}success{% else %}warning{% endif %}">
+                            {% if record.verified %}Verified{% else %}Pending{% endif %}
+                        </span>
+                    </td>
+                    <td>{{ record.verification_code|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No attendance records yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <a href="{% url 'lecture-list' %}" class="btn btn-secondary mt-3">
+        Back to Lectures
+    </a>
+</div>
+{% endblock %}
+
+

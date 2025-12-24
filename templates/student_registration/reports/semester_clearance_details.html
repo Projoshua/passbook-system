@@ -1,0 +1,98 @@
+<!-- templates/student_clearance_details.html -->
+<div class="row">
+    <div class="col-md-4">
+        <div class="text-center mb-3">
+            {% if data.student.student_photo %}
+            <img src="{{ data.student.student_photo.url }}" 
+                 alt="{{ data.student.name }}" 
+                 class="img-fluid rounded" style="max-height: 200px;">
+            {% endif %}
+        </div>
+        
+        <h6 class="border-bottom pb-2">Student Information</h6>
+        <p><strong>Name:</strong> {{ data.student.name }}</p>
+        <p><strong>Registration:</strong> {{ data.student.registration_number }}</p>
+        <p><strong>Access Number:</strong> {{ data.access_number.access_number }}</p>
+        <p><strong>Program:</strong> {{ data.student.program.code }} - {{ data.student.program.name }}</p>
+        <p><strong>Session:</strong> {{ data.student.get_session_display }}</p>
+        <p><strong>Year of Study:</strong> {{ data.access_number.year_of_study }}</p>
+    </div>
+    
+    <div class="col-md-4">
+        <h6 class="border-bottom pb-2">Clearance Status</h6>
+        
+        <div class="list-group mb-3">
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                Finance Clearance
+                <span class="badge {% if data.finance_cleared %}bg-success{% else %}bg-danger{% endif %}">
+                    {{ data.finance_cleared|yesno:"Cleared,Pending" }}
+                </span>
+            </div>
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                Academic Clearance
+                <span class="badge {% if data.academic_cleared %}bg-success{% else %}bg-danger{% endif %}">
+                    {{ data.academic_cleared|yesno:"Cleared,Pending" }}
+                </span>
+            </div>
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                Medical Registration
+                <span class="badge {% if data.medical_cleared %}bg-success{% else %}bg-danger{% endif %}">
+                    {{ data.medical_cleared|yesno:"Registered,Not Registered" }}
+                </span>
+            </div>
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                NCHE Registration
+                <span class="badge {% if data.nche_cleared %}bg-success{% else %}bg-danger{% endif %}">
+                    {{ data.nche_cleared|yesno:"Registered,Not Registered" }}
+                </span>
+            </div>
+        </div>
+        
+        <h6 class="border-bottom pb-2">Academic Progress</h6>
+        <p><strong>Course Units:</strong> {{ data.completed_course_units }}/{{ data.total_course_units }} completed</p>
+        <div class="progress mb-2">
+            <div class="progress-bar bg-info" style="width: {{ data.course_unit_completion_rate }}%">
+                {{ data.course_unit_completion_rate|floatformat:0 }}%
+            </div>
+        </div>
+        
+        <p><strong>Course Works:</strong> {{ data.completed_course_works }}/{{ data.total_course_works }} completed</p>
+        <div class="progress">
+            <div class="progress-bar bg-primary" style="width: {{ data.coursework_completion_rate }}%">
+                {{ data.coursework_completion_rate|floatformat:0 }}%
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <h6 class="border-bottom pb-2">Other Requirements</h6>
+        
+        {% if data.laptop_scheme %}
+        <div class="alert {% if data.laptop_balance <= 0 %}alert-success{% else %}alert-warning{% endif %}">
+            <strong>Laptop Scheme:</strong><br>
+            Total: UGX {{ data.laptop_scheme.total_cost }}<br>
+            Paid: UGX {{ data.laptop_scheme.payment_made }}<br>
+            Balance: <strong>UGX {{ data.laptop_balance }}</strong>
+        </div>
+        {% endif %}
+        
+        {% if data.dead_semester_active %}
+        <div class="alert alert-warning">
+            <strong><i class="fas fa-exclamation-triangle"></i> Dead Semester Active</strong>
+            <p class="mb-0">Student is on a dead semester.</p>
+        </div>
+        {% endif %}
+        
+        {% if data.internship_cleared %}
+        <div class="alert alert-success">
+            <strong><i class="fas fa-briefcase"></i> Internship Completed</strong>
+            <p class="mb-0">{{ data.access_number.internship.company_name }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="alert {% if data.eligible_for_clearance %}alert-success{% else %}alert-danger{% endif %} mt-3">
+            <strong>Eligibility Status:</strong>
+            {{ data.eligible_for_clearance|yesno:"ELIGIBLE for clearance,NOT ELIGIBLE for clearance" }}
+        </div>
+    </div>
+</div>

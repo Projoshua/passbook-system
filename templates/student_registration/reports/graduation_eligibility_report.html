@@ -1,0 +1,46 @@
+
+{% extends "student_registration/reports/base.html" %}
+{% load static %}
+{% load tz %}
+{% block report_content %}
+<div class="summary-box">
+    <strong>Criteria:</strong> Final year students with all coursework done, internship completed, no pending dead semesters, and no prior graduation clearance.
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Registration Number</th>
+            <th>Student Name</th>
+            <th>Program</th>
+            <th>Expected Graduation Year</th>
+            <th>Internship Status</th>
+            <th>Dead Semester Pending</th>
+            <th>Graduation Cleared</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for student in students %}
+        <tr>
+            <td>{{ student.registration_number }}</td>
+            <td>{{ student.name }}</td>
+            <td>{{ student.program.name }}</td>
+            <td class="text-center">{{ student.expected_graduation_year }}</td>
+            <td class="text-center status-approved">DONE</td>
+            <td class="text-center status-approved">NO</td>
+            <td class="text-center status-pending">NO</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">No eligible students found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="summary-box">
+    Total Eligible Students: <strong>{{ students|length }}</strong>
+</div>
+{% endblock %}
+
+

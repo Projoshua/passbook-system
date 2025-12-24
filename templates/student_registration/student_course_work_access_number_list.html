@@ -1,0 +1,40 @@
+
+<!-- templates/course_work/access_number_list.html -->
+{% extends 'base.html' %}
+{% block title %}Select Academic Context{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3>Select Academic Term for {{ student.name }}</h3>
+
+  {% if access_numbers %}
+    <div class="row">
+      {% for access in access_numbers %}
+        <div class="col-md-6 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">{{ access.semester }} - {{ access.academic_year }}</h5>
+              <p class="card-text">
+                <strong>Year of Study:</strong> Year {{ access.year_of_study }}<br>
+                <strong>Generated:</strong> {{ access.generated_date|date:"Y-m-d" }}
+              </p>
+              <a href="{% url 'pass_book:course_work_edit' access.access_number %}" class="btn btn-success btn-sm">
+                <i class="bi bi-pencil"></i> Edit Course Works
+              </a>
+              <a href="{% url 'pass_book:course_work_detail' access.access_number %}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-eye"></i> View
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No academic records found for this student.</p>
+  {% endif %}
+
+  <a href="{% url 'pass_book:student_list' %}" class="btn btn-secondary mt-3">← Back</a>
+</div>
+{% endblock %}
+
+

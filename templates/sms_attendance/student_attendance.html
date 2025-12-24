@@ -1,0 +1,44 @@
+
+<!-- templates/sms_attendance/student_attendance.html -->
+{% extends 'base.html' %}
+{% block content %}
+<h2>My Attendance Records</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Lecture</th>
+            <th>Date</th>
+            <th>Verification Method</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in attendance_records %}
+        <tr>
+            <td>{{ record.lecture.name }} ({{ record.lecture.code }})</td>
+            <td>{{ record.verification_time|date:"M d, Y" }}</td>
+            <td>
+                {% if record.verification_code %}
+                SMS (Code: {{ record.verification_code }})
+                {% else %}
+                Facial Recognition
+                {% endif %}
+            </td>
+            <td>
+                {% if record.verified %}
+                <span class="badge bg-success">Verified</span>
+                {% else %}
+                <span class="badge bg-warning">Pending</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No attendance records found</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+

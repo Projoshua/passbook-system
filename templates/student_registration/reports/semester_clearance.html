@@ -1,0 +1,220 @@
+{% extends 'student_registration/reports/base.html' %}
+
+{% block title %}Semester Clearance Report{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Semester Clearance Report</h3>
+                    
+                    <!-- Filters -->
+                    <div class="card-tools">
+                        <form method="get" class="form-inline">
+                            <div class="form-group mb-2 mr-2">
+                                <label for="academic_year" class="sr-only">Academic Year:</label>
+                                <select name="academic_year" id="academic_year" class="form-control">
+                                    <option value="">All Academic Years</option>
+                                    {% for ay in academic_years %}
+                                        <option value="{{ ay.id }}" {% if ay == academic_year %}selected{% endif %}>
+                                            {{ ay }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="form-group mb-2 mr-2">
+                                <label for="semester" class="sr-only">Semester:</label>
+                                <select name="semester" id="semester" class="form-control">
+                                    <option value="">All Semesters</option>
+                                    {% for sem in semesters %}
+                                        <option value="{{ sem.id }}" {% if sem == semester %}selected{% endif %}>
+                                            {{ sem.number }} - {{ sem.start_date|date:"M Y" }} to {{ sem.end_date|date:"M Y" }}
+                                            {% if sem.is_active %}(Active){% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary mb-2">Filter</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if academic_year and semester %}
+                        <h5>{{ academic_year }} - {{ semester }}</h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <div class="info-box bg-info">
+                                    <span class="info-box-icon"><i class="fas fa-users"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Students</span>
+                                        <span class="info-box-number">{{ total_students }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="info-box bg-success">
+                                    <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Fully Cleared</span>
+                                        <span class="info-box-number">{{ fully_cleared }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="info-box bg-warning">
+                                    <span class="info-box-icon"><i class="fas fa-clock"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Pending Clearance</span>
+                                        <span class="info-box-number">{{ pending_clearance }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th>Access Number</th>
+                                        <th>Program</th>
+                                        <th>Session</th>
+                                        <th>Finance Status</th>
+                                        <th>Academic Status</th>
+                                        <th>Overall Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student_data in students_data %}
+                                    <tr>
+                                        <td>{{ student_data.student.get_full_name }}</td>
+                                        <td>{{ student_data.access_number.access_number }}</td>
+                                        <td>{{ student_data.student.program.name }}</td>
+                                        <td>{{ student_data.student.session }}</td>
+                                        <td>
+                                            {% if student_data.finance_cleared %}
+                                                <span class="badge badge-success">Cleared</span>
+                                            {% else %}
+                                                <span class="badge badge-danger">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if student_data.academic_cleared %}
+                                                <span class="badge badge-success">Cleared</span>
+                                            {% else %}
+                                                <span class="badge badge-danger">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if student_data.fully_cleared %}
+                                                <span class="badge badge-success">Fully Cleared</span>
+                                            {% else %}
+                                                <span class="badge badge-warning">Partially Cleared</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if is_finance_officer or is_supervisor %}
+                                                <button class="btn btn-sm btn-primary toggle-finance" 
+                                                        data-access-number="{{ student_data.access_number.access_number }}"
+                                                        data-cleared="{{ student_data.finance_cleared }}">
+                                                    {% if student_data.finance_cleared %}Unclear Finance{% else %}Clear Finance{% endif %}
+                                                </button>
+                                            {% endif %}
+                                            
+                                            {% if is_academic_officer or is_supervisor %}
+                                                <button class="btn btn-sm btn-info toggle-academic ml-1" 
+                                                        data-access-number="{{ student_data.access_number.access_number }}"
+                                                        data-cleared="{{ student_data.academic_cleared }}">
+                                                    {% if student_data.academic_cleared %}Unclear Academic{% else %}Clear Academic{% endif %}
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="8" class="text-center">No students found for this semester.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <h5><i class="icon fas fa-exclamation-triangle"></i> No Data!</h5>
+                            Please select an academic year and semester to view clearance data.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for handling clearance updates -->
+<script>
+$(document).ready(function() {
+    $('.toggle-finance').click(function() {
+        const accessNumber = $(this).data('access-number');
+        const currentStatus = $(this).data('cleared');
+        const newStatus = !currentStatus;
+        
+        $.ajax({
+            url: '{% url "update_clearance_status" access_number="PLACEHOLDER" %}'.replace('PLACEHOLDER', accessNumber),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val()
+            },
+            data: {
+                'finance_cleared': newStatus
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload(); // Refresh the page to show updated status
+                } else {
+                    alert('Error updating status: ' + response.error);
+                }
+            },
+            error: function() {
+                alert('An error occurred while updating the status.');
+            }
+        });
+    });
+    
+    $('.toggle-academic').click(function() {
+        const accessNumber = $(this).data('access-number');
+        const currentStatus = $(this).data('cleared');
+        const newStatus = !currentStatus;
+        
+        $.ajax({
+            url: '{% url "update_clearance_status" access_number="PLACEHOLDER" %}'.replace('PLACEHOLDER', accessNumber),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val()
+            },
+            data: {
+                'academic_cleared': newStatus
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload(); // Refresh the page to show updated status
+                } else {
+                    alert('Error updating status: ' + response.error);
+                }
+            },
+            error: function() {
+                alert('An error occurred while updating the status.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+
+<!-- templates/course_work/student_list.html -->
+{% extends 'student_registration/base.html' %}
+{% block title %}Select Student{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3>Select Student</h3>
+
+  <form method="get" class="mb-4">
+    <div class="input-group">
+      <input type="text" name="q" class="form-control" placeholder="Search by name or registration number..." value="{{ query }}">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+  </form>
+
+  <div class="list-group">
+    {% for student in students %}
+      <a href="{% url 'pass_book:access_number_list' student.id %}" class="list-group-item list-group-item-action">
+        <strong>{{ student.name }}</strong><br>
+        <small>Reg No: {{ student.registration_number }} | {{ student.programme }}</small>
+      </a>
+    {% empty %}
+      <p class="text-muted">No students found.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+

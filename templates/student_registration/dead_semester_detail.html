@@ -1,0 +1,281 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Dead Semester Application - {{ application.student.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-skull-crossbones"></i> Dead Semester Application
+                    </h4>
+                </div>
+                <div class="card-body">
+
+                    <!-- Student Info -->
+                    <div class="alert alert-info">
+                        <h5 class="mb-3">
+                            🎓 Student: <strong>{{ application.student.name }}</strong>
+                        </h5>
+                        <p><strong>Student Number:</strong> {{ application.student.student_number }}</p>
+                        <p><strong>Program:</strong> {{ application.student.program.name }}</p>
+                        <a href="{% url 'pass_book:student_detail' pk=application.student.pk %}" class="btn btn-sm btn-outline-primary">
+                            👤 View Full Student Profile
+                        </a>
+                    </div>
+
+                    <!-- Application Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Application Type</h6>
+                                    <p class="h5">{{ application.get_application_type_display }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Status</h6>
+                                    
+                                    <span class="badge bg-{{ application.approved|yesno:'success,warning' }}">   
+                                        {{ application.approval_status|title }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dead Period -->
+                    {% if application.application_type == 'SEMESTER' %}
+                        <p><strong>Dead Semester:</strong> Semester {{ application.dead_semester }}</p>
+                    {% else %}
+                        <p><strong>Dead Year:</strong> Year {{ application.dead_year }}</p>
+                    {% endif %}
+
+                    <!-- Reason -->
+                    <div class="mb-4">
+                        <h5>📝 Reason for Application</h5>
+                        <div class="bg-light p-3 rounded">
+                            {{ application.reason|linebreaks }}
+                        </div>
+                    </div>
+
+                    <!-- Approval Signatures (Optional) -->
+                    <div class="mb-4">
+                        <h5>✅ Approval Status</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                HOD Recommendation
+                                
+                                <span class="badge bg-{{ application.hod_recommended|yesno:'success,secondary' }}">    
+                                   {{ application.hod_recommended|yesno:'Approved,Pending' }}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Faculty Recommendation
+                                <span class="badge bg-{{ application.faculty_recommended|yesno:'success,secondary' }}">
+                                    {{ application.faculty_recommended|yesno:'Approved,Pending' }}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Registrar Recommendation
+                                <span class="badge bg-{{ application.registrar_recommended|yesno:'success,secondary' }}">
+                                    {{ application.registrar_recommended|yesno:'Approved,Pending' }}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- ✅ Approval Details Section -->
+<div class="mb-5">
+    <h5 class="border-bottom pb-2 mb-4">
+        <i class="fas fa-clipboard-check"></i> Approval Details
+    </h5>
+
+    <!-- HOD Details -->
+    {% if application.hod_recommended %}
+        <div class="card mb-3 border-start border-5 border-primary">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 text-primary">
+                    <i class="fas fa-user-tie"></i> HOD Approval
+                </h6>
+                <span class="badge bg-success">Approved</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Name:</strong> {{ application.hod_name|default:"—" }}</p>
+                        <p><strong>Designation:</strong> {{ application.hod_designation|default:"—" }}</p>
+                        <p><strong>Department:</strong> {{ application.hod_department|default:"—" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        {% if application.hod_signature %}
+                            <div class="text-center">
+                                <img src="{{ application.hod_signature.url }}" alt="HOD Signature" class="img-fluid rounded" style="max-height: 120px; border: 1px solid #eee;">
+                                <p class="mt-2 mb-0 text-muted small">Signature</p>
+                            </div>
+                        {% else %}
+                            <p class="text-muted"><em>No signature uploaded.</em></p>
+                        {% endif %}
+                        <p class="mt-2"><strong>Date:</strong> {{ application.hod_date|date:"M j, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-light border border-primary d-flex align-items-center mb-3">
+            <i class="fas fa-clock text-primary me-2"></i>
+            <div>
+                <strong>HOD Approval Pending</strong> — Waiting for Head of Department recommendation.
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Faculty Details -->
+    {% if application.faculty_recommended %}
+        <div class="card mb-3 border-start border-5 border-info">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 text-info">
+                    <i class="fas fa-chalkboard-teacher"></i> Faculty Approval
+                </h6>
+                <span class="badge bg-success">Approved</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Name:</strong> {{ application.faculty_name|default:"—" }}</p>
+                        <p><strong>Designation:</strong> {{ application.faculty_designation|default:"—" }}</p>
+                        <p><strong>Department:</strong> {{ application.faculty_department|default:"—" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        {% if application.faculty_signature %}
+                            <div class="text-center">
+                                <img src="{{ application.faculty_signature.url }}" alt="Faculty Signature" class="img-fluid rounded" style="max-height: 120px; border: 1px solid #eee;">
+                                <p class="mt-2 mb-0 text-muted small">Signature</p>
+                            </div>
+                        {% else %}
+                            <p class="text-muted"><em>No signature uploaded.</em></p>
+                        {% endif %}
+                        <p class="mt-2"><strong>Date:</strong> {{ application.faculty_date|date:"M j, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-light border border-info d-flex align-items-center mb-3">
+            <i class="fas fa-clock text-info me-2"></i>
+            <div>
+                <strong>Faculty Approval Pending</strong> — Waiting for Faculty recommendation.
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Registrar Details -->
+    {% if application.registrar_recommended %}
+        <div class="card mb-3 border-start border-5 border-warning">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 text-warning">
+                    <i class="fas fa-building"></i> Registrar Approval
+                </h6>
+                <span class="badge bg-success">Approved</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Name:</strong> {{ application.registrar_name|default:"—" }}</p>
+                        <p><strong>Designation:</strong> {{ application.registrar_designation|default:"—" }}</p>
+                        <p><strong>Department:</strong> {{ application.registrar_department|default:"—" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        {% if application.registrar_signature %}
+                            <div class="text-center">
+                                <img src="{{ application.registrar_signature.url }}" alt="Registrar Signature" class="img-fluid rounded" style="max-height: 120px; border: 1px solid #eee;">
+                                <p class="mt-2 mb-0 text-muted small">Signature</p>
+                            </div>
+                        {% else %}
+                            <p class="text-muted"><em>No signature uploaded.</em></p>
+                        {% endif %}
+                        <p class="mt-2"><strong>Date:</strong> {{ application.registrar_date|date:"M j, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-light border border-warning d-flex align-items-center mb-3">
+            <i class="fas fa-clock text-warning me-2"></i>
+            <div>
+                <strong>Registrar Approval Pending</strong> — Waiting for Registrar recommendation.
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- ✅ Resumption Details (if exists) -->
+{% if has_resumption %}
+    <div class="card mb-5 border-start border-5 border-success">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-success">
+                <i class="fas fa-undo"></i> Resumption Application Details
+            </h5>
+            <span class="badge bg-{{ application.resumption.approved|yesno:'success,warning' }}">
+                {{ application.resumption.approved|yesno:'Approved,Pending' }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Resuming Semester:</strong> Semester {{ application.resumption.resume_semester }}</p>
+                    <p><strong>Academic Year:</strong> Year {{ application.resumption.resume_academic_year }}</p>
+                    <p><strong>Applied On:</strong> {{ application.resumption.application_date|date:"M j, Y" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>📝 Reason for Resumption</h6>
+                    <div class="bg-light p-3 rounded">
+                        {{ application.resumption.reason|linebreaks|default:"No reason provided." }}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <a href="" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-eye"></i> View Full Resumption Record
+                </a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+                    <!-- Resumption Action Button -->
+                    {% if not has_resumption %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> This student has not yet applied for resumption.
+                        </div>
+                        <a href="{% url 'pass_book:resumption_create' dead_app_pk=application.pk %}" 
+                           class="btn btn-success btn-lg w-100">
+                            <i class="fas fa-undo"></i> Create Resumption Application
+                        </a>
+                    {% else %}
+                        <div class="alert alert-success">
+                            ✅ Resumption application already submitted.
+                           
+                        </div>
+                    {% endif %}
+
+                    <!-- Navigation -->
+                    <div class="mt-4 text-center">
+                        <a href="{% url 'pass_book:dead_semester_applications' %}" class="btn btn-outline-secondary">
+                            ← Back to Applications
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

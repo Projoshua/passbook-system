@@ -1,0 +1,63 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Semesters - Student Passbook{% endblock %}
+{% block settings_active %}active{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Course Work Submissions</h2>
+    <p><strong>Student:</strong> {{ access_number.student.get_full_name }} ({{ access_number.access_number }})</p>
+    <p><strong>Semester:</strong> {{ access_number.semester }}</p>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{ formset.management_form }}
+
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Course Unit</th>
+                    <th>Course Work</th>
+                    <th>Submission</th>
+                    <th>Grade</th>
+                    <th>Date Submitted</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in formset %}
+                    <tr>
+                        {% if forloop.first %}
+                            <td rowspan="{{ formset.forms|length }}">{{ form.instance.course_work.course_unit.code }}</td>
+                        {% endif %}
+                        <td>{{ form.instance.course_work.title }}</td>
+                        <td>{{ form.submission_file }} {{ form.submission_text }}</td>
+                        <td>{{ form.grade }} {{ form.grade.errors }}</td>
+                        <td>{{ form.submitted_at }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="d-grid gap-2 d-md-flex">
+            <button type="submit" class="btn btn-primary">Save Submissions</button>
+            <a href="{% url 'pass_book:access_number_detail' access_number=access_number.access_number %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+
+    <!-- Available Works (for info) -->
+    <div class="mt-5">
+        <h4>Available Course Works</h4>
+        <ul>
+            {% for work in available_works %}
+                <li>{{ work.course_unit.code }} - {{ work.title }} (Due: {{ work.due_date|date:"M d, Y" }})</li>
+            {% empty %}
+                <li>No course works assigned for your units.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+

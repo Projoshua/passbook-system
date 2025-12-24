@@ -1,0 +1,381 @@
+{% extends 'student_registration/base.html' %}
+{% load static %}
+
+{% block title %}Create New Student{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .form-section h4 {
+        color: #2c3e50;
+        border-bottom: 3px solid #007bff;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
+        font-weight: bold;
+    }
+    .help-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        padding: 20px 25px;
+    }
+    .btn-lg {
+        padding: 12px 30px;
+        font-size: 1.1rem;
+    }
+    .form-control, .form-control-file {
+        border-radius: 5px;
+    }
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+    label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-plus"></i> Create New Student
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert">
+                                    <span>&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" id="studentForm">
+                        {% csrf_token %}
+
+                        <!-- Basic Information Section -->
+                        <div class="form-section">
+                            <h4><i class="fas fa-id-card"></i> Basic Information</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-field">Student Name</label>
+                                        <input type="text" class="form-control" name="name" required placeholder="Enter full name">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-field">Registration Number</label>
+                                        <input type="text" class="form-control" name="registration_number" 
+                                               placeholder="e.g., 909/24D/U/A001" required>
+                                        <small class="help-text">Enter the manual registration number</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-field">Program</label>
+                                        <select class="form-control" name="program" required>
+                                            <option value="">-- Select Program --</option>
+                                            {% for program in programs %}
+                                                <option value="{{ program.id }}">
+                                                    {{ program.code }} - {{ program.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-field">Nationality</label>
+                                        <input type="text" class="form-control" name="nationality" 
+                                               value="Ugandan" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-field">Student Contact</label>
+                                        <input type="text" class="form-control" name="student_contact" 
+                                               placeholder="+256 700 000000" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Serial Number</label>
+                                        <input type="text" class="form-control" name="serial_number" 
+                                               placeholder="Optional serial number">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Parent/Guardian Information Section -->
+                        <div class="form-section">
+                            <h4><i class="fas fa-users"></i> Parent/Guardian Information (Optional)</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Parent/Guardian Name</label>
+                                        <input type="text" class="form-control" name="parent_guardian_name" 
+                                               placeholder="Enter parent/guardian name">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Parent/Guardian Contact</label>
+                                        <input type="text" class="form-control" name="parent_guardian_contact"
+                                               placeholder="+256 700 000000">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Academic Information Section -->
+                        <div class="form-section">
+                            <h4><i class="fas fa-graduation-cap"></i> Academic Information</h4>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="required-field">Admission Year</label>
+                                        <input type="number" class="form-control" name="admission_year" 
+                                               min="2000" max="{{ current_year|add:1 }}" 
+                                               value="{{ current_year }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="required-field">Session</label>
+                                        <select class="form-control" name="session" required>
+                                            <option value="">-- Select Session --</option>
+                                            {% for code, label in session_choices %}
+                                                <option value="{{ code }}">{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Expected Graduation Year</label>
+                                        <input type="number" class="form-control" name="expected_graduation_year"
+                                               min="{{ current_year }}" max="{{ current_year|add:10 }}"
+                                               placeholder="Optional">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Document Upload Section -->
+                        <div class="form-section">
+                            <h4><i class="fas fa-file-upload"></i> Document Uploads</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Student Photo</label>
+                                        <input type="file" class="form-control-file" name="student_photo"
+                                               accept="image/*">
+                                        <small class="help-text">Upload a clear face photo of the student</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Student Signature</label>
+                                        <input type="file" class="form-control-file" name="signature"
+                                               accept="image/*">
+                                        <small class="help-text">Upload student's signature</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Parent/Guardian Photo</label>
+                                        <input type="file" class="form-control-file" name="parent_guardian_photo"
+                                               accept="image/*">
+                                        <small class="help-text">Upload a clear face photo of parent/guardian</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Parent/Guardian Signature</label>
+                                        <input type="file" class="form-control-file" name="parent_guardian_signature"
+                                               accept="image/*">
+                                        <small class="help-text">Upload parent/guardian's signature</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Manual Receipt Section -->
+                        <div class="form-section">
+                            <h4><i class="fas fa-receipt"></i> Manual Receipt Information</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="manual_received" 
+                                               id="manual_received">
+                                        <label class="form-check-label" for="manual_received">
+                                            Manual Received
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Manual Received Date</label>
+                                        <input type="date" class="form-control" name="manual_received_date">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Create Student
+                            </button>
+                            <a href="{% url 'pass_book:student_list' %}" class="btn btn-secondary btn-lg ml-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+
+                        <div class="alert alert-info mt-3">
+                            <strong><i class="fas fa-info-circle"></i> Important Notes:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Registration number must be entered manually</li>
+                                <li>Static access number will be <strong>generated automatically</strong> upon creation</li>
+                                <li>Fields marked with <span class="text-danger">*</span> are required</li>
+                                <li>Parent/Guardian information is optional but recommended</li>
+                            </ul>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const form = document.getElementById('studentForm');
+    
+    form.addEventListener('submit', function(e) {
+        const regNumber = document.querySelector('input[name="registration_number"]').value.trim();
+        
+        if (!regNumber) {
+            e.preventDefault();
+            alert('Please enter a registration number');
+            return false;
+        }
+        
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+    });
+    
+    // Auto-enable manual received date when checkbox is checked
+    const manualReceivedCheckbox = document.getElementById('manual_received');
+    const manualReceivedDate = document.querySelector('input[name="manual_received_date"]');
+    
+    if (manualReceivedCheckbox && manualReceivedDate) {
+        manualReceivedCheckbox.addEventListener('change', function() {
+            if (this.checked && !manualReceivedDate.value) {
+                // Set today's date
+                const today = new Date().toISOString().split('T')[0];
+                manualReceivedDate.value = today;
+            }
+        });
+    }
+});
+</script>
+<script>
+    window.addEventListener('load', function() {
+        const minioIP = '192.168.43.57:9000';
+        
+        function replaceMinioURLs() {
+            // Replace in all img tags
+            document.querySelectorAll('img[src*="minio:9000"]').forEach(img => {
+                img.src = img.src.replace('minio:9000', minioIP);
+            });
+            
+            // Replace in background images
+            document.querySelectorAll('*').forEach(el => {
+                const bgImage = window.getComputedStyle(el).backgroundImage;
+                if (bgImage && bgImage.includes('minio:9000')) {
+                    el.style.backgroundImage = bgImage.replace('minio:9000', minioIP);
+                }
+            });
+            
+            // Replace in source tags
+            document.querySelectorAll('source[src*="minio:9000"], source[srcset*="minio:9000"]').forEach(source => {
+                if (source.src) source.src = source.src.replace('minio:9000', minioIP);
+                if (source.srcset) source.srcset = source.srcset.replace(/minio:9000/g, minioIP);
+            });
+            
+            // Replace in anchor tags
+            document.querySelectorAll('a[href*="minio:9000"]').forEach(link => {
+                link.href = link.href.replace('minio:9000', minioIP);
+            });
+        }
+        
+        // Run on load
+        replaceMinioURLs();
+        
+        // Run on page show (handles back/forward cache)
+        window.addEventListener('pageshow', replaceMinioURLs);
+        
+        // Handle dynamically loaded content
+        new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === 1) {
+                        if (node.tagName === 'IMG' && node.src && node.src.includes('minio:9000')) {
+                            node.src = node.src.replace('minio:9000', minioIP);
+                        }
+                        node.querySelectorAll('img[src*="minio:9000"]').forEach(img => {
+                            img.src = img.src.replace('minio:9000', minioIP);
+                        });
+                    }
+                });
+            });
+        }).observe(document.body, { childList: true, subtree: true });
+    });
+    </script>
+{% endblock %}

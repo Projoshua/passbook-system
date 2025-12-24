@@ -1,0 +1,106 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2>{{ course_unit.code }} - {{ course_unit.name }}</h2>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Lecturer:</strong> {{ course_unit.lecturer.get_full_name }}</p>
+                    <p><strong>Time:</strong> {{ course_unit.start_time|date:"D, M j, H:i" }} to {{ course_unit.end_time|date:"H:i" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Status:</strong> 
+                        <span class="badge 
+                            {% if course_unit.status == 'Active Now' %}bg-success
+                            {% elif course_unit.status == 'Upcoming' %}bg-warning text-dark
+                            {% else %}bg-secondary{% endif %}">
+                            {{ course_unit.status }}
+                        </span>
+                    </p>
+                    <p><small>{{ course_unit.time_remaining }}</small></p>
+                </div>
+            </div>
+
+            {% if user.is_student %}
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h4>Attendance Verification</h4>
+                </div>
+                <div class="card-body">
+                    {% if course_unit.status == 'Active Now' %}
+                        {% if not attendance %}
+                            <a href="{% url 'verify_attendance' course_unit.pk %}" 
+                               class="btn btn-primary">
+                               Verify Attendance via SMS
+                            </a>
+                        {% elif not attendance.verified %}
+                            <div class="alert alert-warning">
+                                Verification code sent to your phone. Please enter it below.
+                            </div>
+                            <form method="post" action="{% url 'confirm_verification' course_unit.pk %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="verification_code" class="form-label">Verification Code</label>
+                                    <input type="text" class="form-control" id="verification_code" 
+                                           name="verification_code" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Confirm Attendance</button>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle-fill"></i> 
+                                Attendance verified at {{ attendance.verification_time|date:"H:i" }}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            {% if course_unit.status == 'Upcoming' %}
+                                Attendance verification will be available when the lecture starts.
+                            {% else %}
+                                Attendance verification was only available during the lecture time.
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+// Add this to your template
+<script>
+function updateTimeRemaining() {
+    const now = new Date();
+    const start = new Date("{{ course_unit.start_time.isoformat }}");
+    const end = new Date("{{ course_unit.end_time.isoformat }}");
+    
+    if (now < start) {
+        document.getElementById('time-remaining').innerText = 
+            `Starts in ${formatTime(start - now)}`;
+    } else if (now <= end) {
+        document.getElementById('time-remaining').innerText = 
+            `Ends in ${formatTime(end - now)}`;
+    } else {
+        document.getElementById('time-remaining').innerText = 
+            "Lecture completed";
+    }
+}
+
+function formatTime(ms) {
+    const hours = Math.floor(ms / (1000 * 60 * 60));
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
+}
+
+
+updateTimeRemaining();
+setInterval(updateTimeRemaining, 60000);
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,61 @@
+
+<!-- sms_attendance/templates/sms_attendance/Lecture_form.html -->
+{% extends 'base.html' %}
+{% block content %}
+<h2>Create New Lecture</h2>
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        {{ form.code.label_tag }}
+        {{ form.code }}
+    </div>
+    
+    <div class="form-group">
+        {{ form.name.label_tag }}
+        {{ form.name }}
+    </div>
+    
+    <div class="form-group">
+        {{ form.start_time.label_tag }}
+        {{ form.start_time }}
+    </div>
+    
+    <div class="form-group">
+        {{ form.end_time.label_tag }}
+        {{ form.end_time }}
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+<style>
+    /* Improve datetime input appearance */
+    input[type="datetime-local"] {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get current time in Uganda timezone
+    const now = new Date();
+    const ugandaOffset = 3 * 60 * 60 * 1000; // UTC+3 in milliseconds
+    const ugandaTime = new Date(now.getTime() + ugandaOffset);
+    
+    // Set default times (1 hour from now)
+    const startTime = new Date(ugandaTime.getTime() + 60*60*1000);
+    const endTime = new Date(startTime.getTime() + 60*60*1000);
+    
+    function formatDateTime(date) {
+        return date.toISOString().slice(0, 16);
+    }
+    
+    document.getElementById('id_start_time').value = formatDateTime(startTime);
+    document.getElementById('id_end_time').value = formatDateTime(endTime);
+});
+</script>
+
+

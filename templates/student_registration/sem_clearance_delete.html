@@ -1,0 +1,49 @@
+
+<!-- templates/students/confirm_delete.html -->
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Confirm Delete - Clearance Record{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-danger text-white text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <h4 class="mb-0">Confirm Deletion</h4>
+                </div>
+                <div class="card-body text-center p-5">
+                    <p class="lead mb-4">
+                        Are you sure you want to delete the clearance record for<br>
+                        <strong class="text-primary">{{ clearance.access_number }}</strong>?
+                    </p>
+                    <p class="text-muted">
+                        <i class="fas fa-info-circle me-2"></i> This action cannot be undone.
+                    </p>
+
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-lg px-5 me-3">
+                            <i class="fas fa-trash-alt me-2"></i> Yes, Delete
+                        </button>
+                    </form>
+
+                    <a href="{% url 'pass_book:clearance_detail' clearance.access_number %}" 
+                       class="btn btn-outline-secondary btn-lg px-5">
+                        <i class="fas fa-times me-2"></i> Cancel
+                    </a>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{% url 'pass_book:clearance_list' %}" class="btn btn-link text-decoration-none">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Clearance Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

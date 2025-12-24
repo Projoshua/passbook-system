@@ -1,0 +1,67 @@
+
+<!-- templates/student_registration/course_work_form.html -->
+{% extends 'student_registration/base.html' %}
+
+{% block title %} Course Work{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>
+        {% if object %}
+            Edit Course Work: {{ object.title }}
+        {% else %}
+            Create New Course Work
+        {% endif %}
+    </h2>
+
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <div class="text-danger">{{ form.title.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.course_unit.id_for_label }}" class="form-label">Course Unit</label>
+            {{ form.course_unit }}
+            {% if form.course_unit.errors %}
+                <div class="text-danger">{{ form.course_unit.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <div class="text-danger">{{ form.description.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.due_date.id_for_label }}" class="form-label">Due Date</label>
+            {{ form.due_date }}
+            {% if form.due_date.errors %}
+                <div class="text-danger">{{ form.due_date.errors }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+        <a href="{% url 'pass_book:course_work_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+
+<!-- Convert due_date input to date picker -->
+<script>
+    const dueDateInput = document.getElementById('{{ form.due_date.id_for_label }}');
+    if (dueDateInput) {
+        dueDateInput.type = 'date';
+    }
+</script>
+{% endblock %}
+
+
+

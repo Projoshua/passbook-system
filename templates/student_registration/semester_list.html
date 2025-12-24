@@ -1,0 +1,148 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Semesters - Student Passbook{% endblock %}
+{% block settings_active %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="mb-2">
+                <i class="fas fa-book me-3"></i>Semesters
+            </h1>
+            <p class="text-muted mb-0">Manage semester configurations</p>
+        </div>
+        <div>
+            <a href="{% url 'pass_book:semester_create' %}" class="btn btn-primary-custom btn-custom">
+                <i class="fas fa-plus me-2"></i>Add Semester
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Semesters Table -->
+<div class="card card-custom">
+    <div class="card-body">
+        {% if semesters %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Semester Number</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for semester in semesters %}
+                        <tr>
+                            <td>
+                                <strong>{{ semester.number }}</strong>
+                                {% if semester.is_active %}
+                                    <span class="badge bg-success ms-2">Active</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ semester.get_number_display }}</td>
+                            <td>
+                                <span class="badge bg-{% if semester.is_active %}success{% else %}secondary{% endif %}">
+                                    {% if semester.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <!-- Edit Button - Now includes setting active status -->
+                                    <a href="{% url 'pass_book:semester_update' semester.pk %}" class="btn btn-outline-primary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    
+                                    <!-- Delete Button -->
+                                    <form action="{% url 'pass_book:semester_delete' semester.pk %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-danger" title="Delete" 
+                                                onclick="return confirm('Are you sure you want to delete {{ semester.get_number_display }}?');">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No semesters configured</h4>
+                <p class="text-muted">
+                    <a href="{% url 'pass_book:semester_create' %}" class="btn btn-primary-custom mt-3">
+                        <i class="fas fa-plus me-2"></i>Add First Semester
+                    </a>
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Current Semester Info -->
+{% if active_semester %}
+<div class="card card-custom mt-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-star me-2"></i>Current Active Semester
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Semester:</strong> {{ active_semester.get_number_display }}
+            </div>
+            <div class="col-md-6">
+                <strong>Number:</strong> {{ active_semester.number }}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!--
+<div class="card card-custom mt-4">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i>No Active Semester
+        </h5>
+    </div>
+    <div class="card-body">
+        <p>No semester is currently set as active. Please edit a semester and set it as active.</p>
+    </div>
+</div>
+{% endif %}
+-->
+<!-- Semester Reference -->
+<div class="card card-custom mt-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i>Semester Reference
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Semester 1-2:</strong> First Year
+            </div>
+            <div class="col-md-6">
+                <strong>Semester 3-4:</strong> Second Year
+            </div>
+            <div class="col-md-6">
+                <strong>Semester 5-6:</strong> Third Year
+            </div>
+            <div class="col-md-6">
+                <strong>Semester 7-8:</strong> Fourth Year
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

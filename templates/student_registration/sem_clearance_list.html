@@ -1,0 +1,204 @@
+
+<!-- templates/students/clearance_list.html -->
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Semester Clearance Dashboard - Student Passbook{% endblock %}
+{% block content %}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h4 mb-0">
+            <i class="fas fa-clipboard-check text-primary me-2"></i> Semester Clearance Dashboard
+        </h2>
+    </div>
+
+    <!-- Filters Form -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h6 class="mb-0">Filter Students</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="academic_year" class="form-label">Academic Year</label>
+                    <select name="academic_year" id="academic_year" class="form-select">
+                        <option value="">All Years</option>
+                        {% for year in academic_years %}
+                            <option value="{{ year.id }}" {% if year.id|stringformat:"s" == selected_year %}selected{% endif %}>
+                                {{ year }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="semester" class="form-label">Semester</label>
+                    <select name="semester" id="semester" class="form-select">
+                        <option value="">All Semesters</option>
+                        {% for sem in semesters %}
+                            <option value="{{ sem.id }}" {% if sem.id|stringformat:"s" == selected_semester %}selected{% endif %}>
+                                {{ sem }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Search by Name or Access Number</label>
+                    <input type="text" name="search" id="search" class="form-control" placeholder="Enter name or access number" value="{{ search_query }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i> Apply Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Clearance Status</h6>
+            {% if page_obj %}
+                <small class="text-muted">Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} students</small>
+            {% endif %}
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Access Number</th>
+                            <th scope="col">Student Name</th>
+                            <th scope="col">Year / Semester</th>
+                            <th scope="col" class="text-center">Finance Cleared</th>
+                            <th scope="col" class="text-center">Academic Cleared</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for an in page_obj %}
+                            <tr>
+                                <td><code>{{ an.access_number }}</code></td>
+                                <td>{{ an.student.name }}</td>
+                                <td>{{ an.academic_year }} / {{ an.semester }}</td>
+                                <td class="text-center">
+                                    {% if an.clearance and an.clearance.finance_cleared %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i> Cleared
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle me-1"></i> Not Cleared
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if an.clearance and an.clearance.academic_cleared %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i> Cleared
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle me-1"></i> Not Cleared
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="Clearance Actions">
+                                        <!-- Finance Button -->
+                                        {% if not an.clearance or not an.clearance.finance_cleared %}
+                                            <a href="{% url 'pass_book:finance_clearance' an.access_number %}" class="btn btn-warning" title="Mark Finance as Cleared">
+                                                <i class="fas fa-money-bill-wave me-1"></i> Clear Finance
+                                            </a>
+                                        {% else %}
+                                            <button disabled class="btn btn-success" title="Finance Already Cleared">
+                                                <i class="fas fa-check me-1"></i> Finance Cleared
+                                            </button>
+                                        {% endif %}
+
+                                        <!-- Academic Button -->
+                                        {% if not an.clearance or not an.clearance.academic_cleared %}
+                                            <a href="{% url 'pass_book:academic_clearance' an.access_number %}" class="btn btn-info" title="Mark Academic as Cleared">
+                                                <i class="fas fa-graduation-cap me-1"></i> Clear Academic
+                                            </a>
+                                        {% else %}
+                                            <button disabled class="btn btn-success" title="Academic Already Cleared">
+                                                <i class="fas fa-check me-1"></i> Academic Cleared
+                                            </button>
+                                        {% endif %}
+
+                                        <!-- Detail View -->
+                                        <a href="{% url 'pass_book:clearance_detail' an.access_number %}" class="btn btn-outline-secondary" title="View Clearance Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <i class="fas fa-search fa-2x text-muted d-block mb-3"></i>
+                                    <p class="text-muted mb-0">No students found matching your filters.</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.paginator.num_pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active" aria-current="page">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+
+<!-- Optional: Confirmation tooltip or modal can be added later -->
+<script>
+    // Optional: Add tooltips if Bootstrap JS is loaded
+    document.addEventListener("DOMContentLoaded", function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, { placement: 'top' });
+        });
+    });
+</script>
+
+{% endblock %}
+
+

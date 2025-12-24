@@ -1,0 +1,1128 @@
+<!-- pass_book/templates/pass_book/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Passbook{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        /* Responsive Sidebar and Content Layout */
+:root {
+    /* Using colors found from SLAU website search */
+    --primary-color: #654134; /* Brown */
+    --secondary-color: #aa182c; /* Red variant */
+    --success-color: #27ae60; /* Keeping original success color */
+    --warning-color: #d5ba8c; /* Tan */
+    --danger-color: #be2032; /* Red */
+    --light-bg: #eadcc5; /* Light Tan */
+    --white: #ffffff;
+    --sidebar-width: 250px;
+    --navbar-height: 76px;
+}
+
+body {
+    background-color: var(--light-bg);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding-top: var(--navbar-height);
+    overflow-x: hidden;
+}
+
+.navbar-custom {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1030;
+    height: var(--navbar-height);
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    height: 40px;
+    width: auto;
+    margin-right: 10px;
+    border-radius: 4px;
+}
+
+/* Sidebar - Slides in from left */
+.sidebar {
+    background-color: var(--white);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    height: calc(100vh - var(--navbar-height));
+    padding: 20px 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: transform 0.3s ease;
+    position: fixed;
+    top: var(--navbar-height);
+    left: 0;
+    z-index: 1020;
+    width: var(--sidebar-width);
+    transform: translateX(0);
+}
+
+/* Sidebar hidden state - slides out to the left */
+.sidebar.collapsed {
+    transform: translateX(-100%);
+}
+
+/* Sidebar Navigation Links */
+.sidebar .nav-link {
+    color: #6c757d;
+    padding: 12px 15px;
+    border-radius: 0;
+    margin-bottom: 1px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.sidebar .nav-link i {
+    min-width: 20px;
+    text-align: center;
+    margin-right: 15px;
+    font-size: 1.1rem;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background-color: #e9ecef;
+    color: var(--primary-color);
+    border-left: 4px solid var(--secondary-color);
+}
+
+.sidebar .dropdown-toggle::after {
+    margin-left: auto;
+    transition: transform 0.3s ease;
+}
+
+.sidebar .dropdown-menu {
+    border: none;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+    background-color: var(--light-bg);
+    margin-left: 0;
+    border-radius: 0;
+    position: static !important;
+    transform: none !important;
+    will-change: auto !important;
+    display: none;
+}
+
+.sidebar .dropdown.show .dropdown-menu {
+    display: block;
+}
+
+.sidebar .dropdown-item {
+    padding: 8px 15px 8px 45px;
+    font-size: 0.85rem;
+    color: #666;
+    white-space: nowrap;
+}
+
+.sidebar .dropdown-item:hover {
+    background-color: #e9ecef;
+    color: var(--primary-color);
+}
+
+.nav-header {
+    font-weight: 600;
+    padding: 12px 15px;
+    color: #666;
+    border-bottom: 1px solid #e9ecef;
+    margin: 15px 0 5px 0;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.nav-header i {
+    min-width: 20px;
+    text-align: center;
+    margin-right: 15px;
+    font-size: 1.1rem;
+}
+
+/* Main Content - Always takes full width */
+#main-content {
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+    width: 100%;
+    min-height: calc(100vh - var(--navbar-height));
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Content wrapper */
+.content-wrapper {
+    background-color: var(--white);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    padding: 30px;
+    margin: 20px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.card-custom {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.card-custom:hover {
+    transform: translateY(-5px);
+}
+
+.btn-custom {
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, var(--secondary-color), #c53a4e);
+    border: none;
+    color: var(--white);
+}
+
+.btn-primary-custom:hover {
+    background: linear-gradient(135deg, #921525, var(--secondary-color));
+    transform: translateY(-2px);
+}
+
+.form-control:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(170, 24, 44, 0.25);
+}
+
+.page-header {
+    background: linear-gradient(135deg, var(--light-bg), var(--white));
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.stats-card {
+    background: linear-gradient(135deg, var(--secondary-color), #c53a4e);
+    color: var(--white);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.table-custom {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.table-custom thead {
+    background: linear-gradient(135deg, var(--primary-color), #5a3a2b);
+    color: var(--white);
+}
+
+.badge-custom {
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.alert-custom {
+    border: none;
+    border-radius: 10px;
+    padding: 15px 20px;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+}
+
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 9998;
+}
+
+/* Sidebar Toggle Button - Always visible in navbar */
+#sidebarToggle {
+    color: var(--white);
+    border: none;
+    font-size: 1.2rem;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#sidebarToggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #d0d0d0;
+}
+
+/* Sidebar Overlay - Appears when sidebar is open */
+.sidebar-overlay {
+    position: fixed;
+    top: var(--navbar-height);
+    left: 0;
+    width: 100%;
+    height: calc(100vh - var(--navbar-height));
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1019;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Desktop Responsive (> 1200px) */
+@media (min-width: 1200px) {
+    .content-wrapper {
+        max-width: calc(100vw - 40px);
+    }
+}
+
+/* Laptop Responsive (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .content-wrapper {
+        padding: 20px;
+        margin: 15px;
+    }
+}
+
+/* Tablet Responsive (768px - 991px) */
+@media (max-width: 991px) {
+    .content-wrapper {
+        padding: 20px;
+        margin: 15px;
+    }
+}
+
+/* Mobile Responsive (< 768px) */
+@media (max-width: 767px) {
+    :root {
+        --navbar-height: 56px;
+    }
+    
+    body {
+        padding-top: var(--navbar-height);
+    }
+    
+    .navbar-custom {
+        padding: 0.5rem 1rem;
+        height: var(--navbar-height);
+    }
+    
+    .sidebar {
+        top: var(--navbar-height);
+        height: calc(100vh - var(--navbar-height));
+    }
+    
+    .content-wrapper {
+        padding: 15px;
+        margin: 10px;
+        border-radius: 8px;
+    }
+    
+    .navbar-brand .logo {
+        height: 30px;
+    }
+    
+    .navbar-brand span {
+        font-size: 0.9rem;
+    }
+}
+
+/* Extra small devices (< 576px) */
+@media (max-width: 575px) {
+    .content-wrapper {
+        padding: 10px;
+        margin: 8px;
+    }
+    
+    .navbar-brand span {
+        display: none;
+    }
+    
+    .navbar-brand .logo {
+        height: 28px;
+        margin-right: 0;
+    }
+    
+    .stats-card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .stats-card h5 {
+        font-size: 1rem;
+    }
+    
+    .stats-card h2 {
+        font-size: 1.8rem;
+    }
+}
+
+/* Tables Responsive */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-custom {
+    min-width: 600px;
+}
+
+@media (max-width: 767px) {
+    .table-custom {
+        font-size: 0.85rem;
+    }
+    
+    .table-custom th,
+    .table-custom td {
+        padding: 0.5rem;
+    }
+}
+
+/* Cards Responsive */
+.card-custom {
+    margin-bottom: 20px;
+}
+
+@media (max-width: 767px) {
+    .card-custom {
+        margin-bottom: 15px;
+    }
+}
+
+/* Buttons Responsive */
+@media (max-width: 575px) {
+    .btn-custom {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Forms Responsive */
+@media (max-width: 575px) {
+    .form-control,
+    .form-select {
+        font-size: 0.9rem;
+    }
+}
+
+/* Ensure no horizontal overflow */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Page Header Responsive */
+@media (max-width: 767px) {
+    .page-header {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .page-header h2 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 991px) {
+    .stats-card {
+        padding: 20px;
+    }
+}
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container-fluid">
+            <!-- Sidebar Toggle Button -->
+            <button id="sidebarToggle" class="d-flex align-items-center justify-content-center">
+                <i class="fas fa-bars"></i>
+            </button>
+            <!-- Brand with Logo -->
+           <a class="navbar-brand mx-auto mx-lg-0" href="{% url 'pass_book:dashboard' %}">
+                <div class="logo-container">
+                    <img src="data:image/jpeg;base64,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zzzyy9zzzzzzzzzzzzzzzzzzzzzzzzzzzzzwmN+MG1sMEO66PLv7x9e9jzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzxxw49ww45+w88+/8AffPPPc8888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888/8QAAv/aAAwDAQACAAMAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEZviIvIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATRnWP/JAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWYvddKUuYAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAJzfOAAAEpJAAAAAAAAAAAAAAAAAAO/BdZqp8JAKDJQOAAADoAAAAAAAAAiMIAAAAAAAA8eFXjAAXjAGpPKnh8gShi0URW8sIAGYz6PgDAAewiApFAGCDEYICJdiJLKfmFIAAAAAAAL10KAALvOgocfWojo52p/RPMWsMAbrBohF8FJEcAReJ4n6HT0UdjJ7YFKZx5ioAAAAjXxzsaAGCr+Qfq6X7lw1v2qmnUiIetg66yy66g5IjpyRv+E3lNlRFPuMtXiiqwlAAAAAQwgAAAAAAAAAAAAAAAAAAAAAAAAAvN6SZ5zbyAJgQgAAAwwgQAAwAAAwAwwkOFhAAAAAAAAAAA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" alt="SLAU Logo" class="logo">
+                    <span class="ms-2">Student Passbook</span>
+                </div>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            {{ user.username|default:"User" }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" >
+                                <form action="{% url 'logout' %}" method="post" >
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item-btn">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </button>
+                                </form>
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Sidebar -->
+    {% if not user.is_student %}
+    <div class="sidebar" id="sidebar">
+        <nav class="nav flex-column">
+            <!-- Add this block within the main <nav> inside the #sidebar div, perhaps after the 'Reports & Analytics' section -->
+            {% if user.is_sysadmin %}
+            <div class="nav-header">
+                <i class="fas fa-users-cog"></i> <span>Staff Management</span>
+            </div>  
+            <!--- shdskdf sldkf-->
+            <a class="nav-link {% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}" href="{% url 'staff_list' %}">
+                <i class="fas fa-list"></i> <span>View Staff</span>
+            </a>
+            <!-- Note: Edit and Delete actions are typically accessed from the View Staff list page -->
+            {% endif %}
+            
+            <!-- Dashboard -->
+            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'pass_book:dashboard' %}">
+                <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+            </a>
+
+            <!-- Academic Structure Section -->
+            <div class="nav-header">
+                <i class="fas fa-university"></i> <span>Academic Structure</span>
+            </div>
+
+            <!-- Programs Dropdown -->
+            {% if user.is_head_of_department or user.is_sysadmin %}
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-graduation-cap"></i> <span>Programs</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:program_list' %}">View All</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:program_create' %}">Add New</a></li>
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Courses Dropdown -->
+            {% if user.is_head_of_department or user.is_sysadmin %}
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-layer-group"></i> <span>Courses</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:course_list' %}">View All</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:course_create' %}">Add New</a></li>
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Students Dropdown -->
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user-graduate"></i> <span>Students</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:student_list' %}">View All</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:student_create' %}">Add New</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:select_student' %}">Select Student</a></li>
+                </ul>
+            </div>
+            <!-- Academic Years Dropdown -->
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-calendar-alt"></i> <span>Academic Years</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:academic_year_list' %}">View All</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:academic_year_create' %}">Add New</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#">Set Active Year</a></li> <!-- Assuming this is handled by a specific view -->
+                </ul>
+            </div>
+            <!-- Semesters Dropdown -->
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-clock"></i> <span>Semesters</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:semester_list' %}">View All</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:semester_create' %}">Add New</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#">Set Active Semester</a></li> <!-- Assuming this is handled by a specific view -->
+                </ul>
+            </div>
+            <!-- Access Numbers (Semester Codes) Dropdown -->
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-id-card"></i> <span>Semester Codes</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:list' %}">View All</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:bulk_generate' %}">Bulk Generate</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#">Deactivate</a></li> <!-- Assuming this is handled by a specific view -->
+                </ul>
+            </div>
+
+            <!-- Course Management Section -->
+            {% if user.is_head_of_department or user.is_sysadmin %}
+            <div class="nav-header">
+                <i class="fas fa-book"></i> <span>Course Management</span>
+            </div>
+            <!-- Course Units Dropdown -->
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-book-open"></i> <span>Course Units</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:course_unit_list' %}">View All</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:course_unit_create' %}">Add New</a></li>
+                </ul>
+            </div>
+            <!-- Course Works Dropdown -->
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-tasks"></i> <span>Course Works</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:course_work_list' %}">Manage Course Works</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:course_work_create' %}">Add New Work</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:student_course_work_list' %}">Student Submissions</a></li>
+                    <!-- Fix 1: Assign Coursework Link -->
+                    {% if course_work_id|default:'' != '' %}
+                    <li><a class="dropdown-item" href="{% url 'pass_book:assign_coursework' course_work_id=course_work_id %}">Assign to Students</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <!-- Student Course Units Management Dropdown -->
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user-edit"></i> <span>Student Course Units</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:select_student_for_course_units' %}">Select Student</a></li>
+                    <!-- Fix 2: Student Course Units Management -->
+                    {% if access_number|default:'' != '' %}
+                    <li><a class="dropdown-item" href="{% url 'pass_book:student_course_units_manage' access_number=access_number %}">Manage Units</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Student Services Section -->
+            <div class="nav-header">
+                <i class="fas fa-handshake"></i> <span>Student Services</span>
+            </div>
+
+            <!-- Associations Dropdown -->
+            {% if user.is_dean_of_students or user.is_sysadmin %}
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-users-cog"></i> <span>Associations</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:association_list' %}">View All</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:association_create' %}">Add New</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:select_student_for_association' %}">Assign Student</a></li>
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Dead Semester Applications -->
+            {% if user.is_student or user.is_head_of_department or user.is_dean_of_students or user.is_academic_registrar or user.is_sysadmin %}
+            <a class="nav-link" href="{% url 'pass_book:dead_semester_applications' %}">
+                <i class="fas fa-pause-circle"></i> <span>Dead Semester Apps</span>
+            </a>
+            {% endif %}
+
+            <!-- Laptop Scheme -->
+            {% if user.is_finance_director or user.is_sysadmin %}
+            <a class="nav-link" href="{% url 'pass_book:laptop_scheme_list' %}">
+                <i class="fas fa-laptop"></i> <span>Laptop Scheme</span>
+            </a>
+            {% endif %}
+
+            <!-- Medical Registration -->
+            {% if user.is_medical_officer or user.is_sysadmin %}
+            <a class="nav-link" href="{% url 'pass_book:medical_registration_list' %}">
+                <i class="fas fa-notes-medical"></i> <span>Medical Registration</span>
+            </a>
+            {% endif %}
+
+            <!-- Internship -->
+            <a class="nav-link" href="{% url 'pass_book:internship_list' %}"> <!-- Assuming internship_list exists or use internship_dashboard -->
+                <i class="fas fa-briefcase"></i> <span>Internships</span>
+            </a>
+
+            <!-- Regulatory Section -->
+            <div class="nav-header">
+                <i class="fas fa-gavel"></i> <span>Regulatory</span>
+            </div>
+
+            <!-- NCHE Registration Dropdown -->
+            {% if user.is_nche_officer or user.is_sysadmin %}
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-file-signature"></i> <span>NCHE Registration</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:nche_registration_list' %}">View All</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:student_selection' %}">Register Student</a></li>
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Clearance Section -->
+            <div class="nav-header">
+                <i class="fas fa-check-circle"></i> <span>Clearance</span>
+            </div>
+  {% if user.is_finance_director or user.is_sysadmin or user.is_academic_registrar %}
+            <!-- Semester Clearance Dropdown -->
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-clipboard-check"></i> <span>Semester Clearance</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:clearance_list' %}">View All Clearances</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:select_student_for_clearance' %}">Start New Clearance</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <!-- Fix 3: Finance Clearance -->
+                    {% if access_number|default:'' != '' %}
+                        {% if user.is_finance_director or user.is_sysadmin %}
+                        <li><a class="dropdown-item" href="{% url 'pass_book:finance_clearance' access_number=access_number %}">Finance Clearance</a></li>
+                        {% endif %}
+                    {% endif %}
+                    <!-- Fix 4: Academic Clearance -->
+                    {% if access_number|default:'' != '' %}
+                        {% if user.is_academic_registrar or user.is_sysadmin %}
+                        <li><a class="dropdown-item" href="{% url 'pass_book:academic_clearance' access_number=access_number %}">Academic Clearance</a></li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+{% endif %}
+            <!-- Graduation Clearance Dropdown -->
+            {% if user.is_dean_of_students or user.is_sysadmin %}
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-graduation-cap"></i> <span>Graduation Clearance</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:student_selection_view' %}">Select Student</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:graduation_clearance_list' %}">View All</a></li>
+                    <!-- Fix 5: Graduation Clearance Detail -->
+                    {% if student_pk|default:'' != '' %}
+                    <li><a class="dropdown-item" href="{% url 'pass_book:graduation_clearance' student_pk=student_pk %}">Student Graduation Clearance</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Reports & Analytics Section -->
+            <div class="nav-header">
+                <i class="fas fa-chart-bar"></i> <span>Reports & Analytics</span>
+            </div>
+            <a class="nav-link" href="{% url 'pass_book:reports' %}">
+                <i class="fas fa-analytics"></i> <span>Reports Dashboard</span>
+            </a>
+            <!-- Individual Reports -->
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-file-alt"></i> <span>Reports</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pass_book:student_report' %}">Student Report</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:program_enrollment_report' %}">Program Enrollment</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:semester_clearance_report' %}">Semester Clearance</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:student_course_unit_report' %}">Course Units</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:finance_receivables_report' %}">Finance Receivables</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:graduation_eligibility_report' %}">Graduation Eligibility</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:dead_semester_applications_report' %}">Dead Semester Apps</a></li>
+                </ul>
+            </div>
+
+            <!-- Quick Actions Section (Conditional) -->
+            {% if access_number or student_pk %}
+            <div class="nav-header mt-4 quick-actions-section">
+                <i class="fas fa-bolt"></i> <span>Quick Actions</span>
+            </div>
+            <div class="dropdown quick-actions-section">
+                <button class="btn btn-outline-primary btn-sm dropdown-toggle w-100 mx-3" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-plus me-2"></i> <span>Quick Actions</span>
+                </button>
+                <ul class="dropdown-menu">
+                    {% if access_number|default:'' != '' %}
+                    <!-- Fix 6: Quick Actions - Semester Registration -->
+                    {% if user.is_finance_director or user.is_academic_registrar or user.is_dean_of_students or user.is_sysadmin %}
+                    <li><a class="dropdown-item" href="{% url 'pass_book:semester_registration' access_number=access_number %}"><i class="fas fa-user-plus me-2"></i>Semester Registration</a></li>
+                    {% endif %}
+                    <!-- Fix 7: Quick Actions - Course Work -->
+                    {% if user.is_head_of_department or user.is_sysadmin %}
+                    <li><a class="dropdown-item" href="{% url 'pass_book:student_course_works_view' access_number=access_number %}"><i class="fas fa-tasks me-2"></i>Course Work</a></li>
+                    {% endif %}
+                    <!-- Fix 8: Quick Actions - Associations -->
+                    {% if user.is_dean_of_students or user.is_sysadmin %}
+                    <li><a class="dropdown-item" href="{% url 'pass_book:student_associations' access_number=access_number %}"><i class="fas fa-users me-2"></i>Associations</a></li>
+                    {% endif %}
+                    <!-- Fix 9: Quick Actions - NCHE Registration -->
+                    {% if user.is_nche_officer or user.is_sysadmin %}
+                    <li><a class="dropdown-item" href="{% url 'pass_book:nche_registration' access_number=access_number %}"><i class="fas fa-file-contract me-2"></i>NCHE Reg</a></li>
+                    {% endif %}
+                    <!-- Fix 10: Quick Actions - Medical Registration -->
+                    {% if user.is_medical_officer or user.is_sysadmin %}
+                    <li><a class="dropdown-item" href="{% url 'pass_book:medical_registration_view' access_number=access_number %}"><i class="fas fa-heartbeat me-2"></i>Medical Reg</a></li>
+                    {% endif %}
+                    <!-- Fix 11: Quick Actions - Internship and Semester Clearance -->
+                    <li><a class="dropdown-item" href="{% url 'pass_book:internship_detail' access_number=access_number %}"><i class="fas fa-briefcase me-2"></i>Internship</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pass_book:semester_clearance' access_number=access_number %}"><i class="fas fa-check me-2"></i>Semester Clearance</a></li>
+                    {% endif %}
+                    {% if student_pk|default:'' != '' %}
+                    <!-- Fix 12: Quick Actions - Dead Semester Application -->
+                    {% if user.is_student or user.is_head_of_department or user.is_dean_of_students or user.is_academic_registrar or user.is_sysadmin %}
+                    <li><a class="dropdown-item" href="{% url 'pass_book:dead_semester_create' student_pk=student_pk %}"><i class="fas fa-pause-circle me-2"></i>Dead Semester App</a></li>
+                    {% endif %}
+                    <!-- Fix 13: Quick Actions - Graduation Clearance -->
+                    {% if user.is_dean_of_students or user.is_sysadmin %}
+                    <li><a class="dropdown-item" href="{% url 'pass_book:graduation_clearance' student_pk=student_pk %}"><i class="fas fa-graduation-cap me-2"></i>Graduation Clearance</a></li>
+                    {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+    <!-- Main Content -->
+    <div class="container-fluid" id="main-content">
+        <!-- Messages -->
+        {% if messages %}
+            <div class="mt-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-custom alert-dismissible fade show" role="alert">
+                        {% if message.tags == 'error' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% elif message.tags == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <!-- Page Content -->
+        <div class="content-wrapper">
+            {% block content %}
+            <div class="page-header">
+                <h2><i class="fas fa-home me-2"></i>Welcome to the Dashboard</h2>
+                <p class="text-muted">Use the navigation menu to access different sections of the Student Passbook.</p>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <h5>Total Students</h5>
+                        <h2>1,234</h2> <!-- Placeholder data -->
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <h5>Active Programs</h5>
+                        <h2>25</h2> <!-- Placeholder data -->
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <h5>Pending Clearances</h5>
+                        <h2>56</h2> <!-- Placeholder data -->
+                    </div>
+                </div>
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay"></div>
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const dropdownToggles = document.querySelectorAll('.sidebar .dropdown-toggle');
+    
+    // Create overlay element
+    const overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    document.body.appendChild(overlay);
+    
+    // Initialize sidebar state from localStorage (default to collapsed/hidden)
+    if (localStorage.getItem('sidebarCollapsed') === null) {
+        localStorage.setItem('sidebarCollapsed', 'true');
+    }
+    
+    if (localStorage.getItem('sidebarCollapsed') === 'true') {
+        sidebar.classList.add('collapsed');
+    } else {
+        sidebar.classList.remove('collapsed');
+        overlay.classList.add('show');
+    }
+    
+    // Toggle Sidebar
+    sidebarToggle?.addEventListener('click', function (e) {
+        e.stopPropagation();
+        sidebar.classList.toggle('collapsed');
+        overlay.classList.toggle('show');
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    });
+    
+    // Close sidebar when clicking overlay
+    overlay.addEventListener('click', function () {
+        sidebar.classList.add('collapsed');
+        overlay.classList.remove('show');
+        localStorage.setItem('sidebarCollapsed', 'true');
+    });
+    
+    // Handle dropdowns in sidebar
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const parent = this.closest('.dropdown');
+            
+            // Close other dropdowns
+            document.querySelectorAll('.sidebar .dropdown').forEach(dropdown => {
+                if (dropdown !== parent && dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                    dropdown.querySelector('.dropdown-menu').style.display = 'none';
+                }
+            });
+            
+            // Toggle current dropdown
+            parent.classList.toggle('show');
+            const menu = parent.querySelector('.dropdown-menu');
+            if (parent.classList.contains('show')) {
+                menu.style.display = 'block';
+            } else {
+                menu.style.display = 'none';
+            }
+        });
+    });
+    
+    // Close sidebar when clicking a link (useful on mobile)
+    document.querySelectorAll('.sidebar .nav-link:not(.dropdown-toggle), .sidebar .dropdown-item').forEach(link => {
+        link.addEventListener('click', function () {
+            // Only auto-close on smaller screens
+            if (window.innerWidth < 992) {
+                sidebar.classList.add('collapsed');
+                overlay.classList.remove('show');
+                localStorage.setItem('sidebarCollapsed', 'true');
+            }
+        });
+    });
+    
+    // Auto-hide alerts after 5 seconds
+    setTimeout(function () {
+        document.querySelectorAll('.alert').forEach(alert => {
+            alert.classList.remove('show');
+            alert.style.display = 'none';
+        });
+    }, 5000);
+    
+    // Add loading to form submissions
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function () {
+            document.getElementById('loadingOverlay').style.display = 'block';
+            document.getElementById('loadingSpinner').style.display = 'block';
+        });
+    });
+    
+    // Add confirmation to delete operations
+    document.querySelectorAll('.btn-danger[href*="delete"]').forEach(button => {
+        button.addEventListener('click', function (e) {
+            if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    // Function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Set up CSRF token for AJAX (if using jQuery)
+    const csrftoken = getCookie('csrftoken');
+    if (typeof $ !== 'undefined') {
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+    }
+    
+    // Handle window resize
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            // If resized to desktop and sidebar is collapsed, keep it that way
+            if (window.innerWidth >= 992) {
+                // Optional: You can add logic here if needed
+            }
+        }, 250);
+    });
+});
+    </script>
+    <script>
+        window.addEventListener('load', function() {
+            const minioIP = '192.168.43.57:9000';
+            
+            function replaceMinioInText(node) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    if (node.textContent.includes('minio:9000')) {
+                        node.textContent = node.textContent.replace(/minio:9000/g, minioIP);
+                    }
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    // Replace in all attributes
+                    Array.from(node.attributes || []).forEach(attr => {
+                        if (attr.value.includes('minio:9000')) {
+                            attr.value = attr.value.replace(/minio:9000/g, minioIP);
+                        }
+                    });
+                    
+                    // Recursively process child nodes
+                    Array.from(node.childNodes).forEach(child => replaceMinioInText(child));
+                }
+            }
+            
+            function replaceAllMinioOccurrences() {
+                // Replace in entire body
+                replaceMinioInText(document.body);
+                
+                // Replace in styles
+                document.querySelectorAll('style').forEach(style => {
+                    if (style.textContent.includes('minio:9000')) {
+                        style.textContent = style.textContent.replace(/minio:9000/g, minioIP);
+                    }
+                });
+                
+                // Replace in inline styles
+                document.querySelectorAll('[style*="minio:9000"]').forEach(el => {
+                    el.style.cssText = el.style.cssText.replace(/minio:9000/g, minioIP);
+                });
+            }
+            
+            // Run on load
+            replaceAllMinioOccurrences();
+            
+            // Run on page show (handles back/forward cache)
+            window.addEventListener('pageshow', replaceAllMinioOccurrences);
+            
+            // Handle dynamically added content
+            new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) {
+                            replaceMinioInText(node);
+                        }
+                    });
+                });
+            }).observe(document.body, { childList: true, subtree: true, characterData: true });
+        });
+        </script>
+        
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

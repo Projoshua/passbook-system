@@ -1,0 +1,801 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ student.name }} - Student Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Student Details</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'pass_book:student_list' %}">Students</a></li>
+                            <li class="breadcrumb-item active">{{ student.name }}</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <a href="{% url 'admin:pass_book_student_change' student.id %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-edit"></i> Edit in Admin
+                    </a>
+                    <a href="{% url 'pass_book:student_list' %}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Basic Information Card -->
+    <div class="row mb-4">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-graduate"></i> Student Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        {% if student.student_photo %}
+                            <img src="{{ student.student_photo.url }}" alt="Student Photo" 
+                                 class="img-fluid rounded-circle" style="max-height: 200px;">
+                        {% else %}
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 150px; height: 150px;">
+                                <i class="fas fa-user-graduate fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <h4 class="mt-3">{{ student.name }}</h4>
+                        <span class="badge bg-info">{{ student.get_session_display }} Session</span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th class="w-40">Registration Number:</th>
+                                    <td>{{ student.registration_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Static Access Number:</th>
+                                    <td><span class="badge bg-dark">{{ student.static_access_number }}</span></td>
+                                </tr>
+                                <tr>
+                                    <th>Student Number:</th>
+                                    <td>{{ student.student_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Program:</th>
+                                    <td>{{ student.program.name }} ({{ student.program.code }})</td>
+                                </tr>
+                                <tr>
+                                    <th>Admission Year:</th>
+                                    <td>{{ student.admission_year }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Expected Graduation:</th>
+                                    <td>{{ student.expected_graduation_year|default:"Not set" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Nationality:</th>
+                                    <td>{{ student.nationality }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Contact:</th>
+                                    <td>{{ student.student_contact }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Created:</th>
+                                    <td>{{ student.created_at|date:"Y-m-d H:i" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <!-- Parent/Guardian Information -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Parent/Guardian Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            {% if student.parent_guardian_photo %}
+                                <img src="{{ student.parent_guardian_photo.url }}" alt="Parent Photo" 
+                                     class="img-fluid rounded" style="max-height: 150px;">
+                            {% else %}
+                                <div class="bg-light rounded d-inline-flex align-items-center justify-content-center" 
+                                     style="width: 150px; height: 150px;">
+                                    <i class="fas fa-user-friends fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th class="w-40">Name:</th>
+                                    <td>{{ student.parent_guardian_name|default:"Not provided" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Contact:</th>
+                                    <td>{{ student.parent_guardian_contact|default:"Not provided" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Manual Received:</th>
+                                    <td>
+                                        {% if student.manual_received %}
+                                            <span class="badge bg-success">Yes</span>
+                                            ({{ student.manual_received_date|date:"Y-m-d" }})
+                                        {% else %}
+                                            <span class="badge bg-danger">No</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if student.parent_guardian_signature %}
+                                <tr>
+                                    <th>Parent Signature:</th>
+                                    <td>
+                                        <img src="{{ student.parent_guardian_signature.url }}" alt="Parent Signature" 
+                                             class="img-fluid" style="max-height: 50px;">
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% if student.signature %}
+                                <tr>
+                                    <th>Student Signature:</th>
+                                    <td>
+                                        <img src="{{ student.signature.url }}" alt="Student Signature" 
+                                             class="img-fluid" style="max-height: 50px;">
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Course Units</h6>
+                            <h2 class="mb-0">{{ passed_course_units }}/{{ total_course_units }}</h2>
+                            <small>Passed/Total</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Course Works</h6>
+                            <h2 class="mb-0">{{ completed_course_works }}/{{ total_course_works }}</h2>
+                            <small>Completed/Total</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Associations</h6>
+                            <h2 class="mb-0">{{ active_associations }}</h2>
+                            <small>Active Memberships</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Access Numbers</h6>
+                            <h2 class="mb-0">{{ access_numbers.count }}</h2>
+                            <small>Semester Registrations</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Access Numbers by Academic Year -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-id-card"></i> Access Numbers by Academic Year</h5>
+                </div>
+                <div class="card-body">
+                    {% for year, access_nums in access_numbers_by_year.items %}
+                    <div class="mb-4">
+                        <h6 class="text-primary">{{ year }}</h6>
+                        <div class="row">
+                            {% for an in access_nums %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card border">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <span class="badge bg-dark">{{ an.access_number }}</span>
+                                        </h6>
+                                        <p class="mb-1">
+                                            <small>Semester:</small> {{ an.semester.get_number_display }}
+                                        </p>
+                                        <p class="mb-1">
+                                            <small>Year of Study:</small> Year {{ an.year_of_study }}
+                                        </p>
+                                        <p class="mb-0">
+                                            <small>Generated:</small> {{ an.generated_date|date:"Y-m-d" }}
+                                        </p>
+                                        <div class="mt-2">
+                                            {% if an.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <hr>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-id-card fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No access numbers found</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Units by Semester -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-book"></i> Course Units by Semester</h5>
+                </div>
+                <div class="card-body">
+                    {% for semester, course_units in course_units_by_semester.items %}
+                    <div class="mb-4">
+                        <h6 class="text-warning">{{ semester }}</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Title</th>
+                                        <th>Credit Units</th>
+                                        <th>Status</th>
+                                        <th>HOD Certified</th>
+                                        <th>Certification Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for scu in course_units %}
+                                    <tr>
+                                        <td><strong>{{ scu.course_unit.code }}</strong></td>
+                                        <td>{{ scu.course_unit.title }}</td>
+                                        <td>{{ scu.course_unit.credit_units }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ status_colors|get_item:scu.status|default:'secondary' }}">
+                                                {{ scu.get_status_display|default:"Pending" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if scu.hod_certified %}
+                                                <span class="badge bg-success">Yes</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ scu.hod_certification_date|date:"Y-m-d"|default:"-" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <hr>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No course units registered</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Associations & Memberships -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Association Memberships</h5>
+                </div>
+                <div class="card-body">
+                    {% if student_associations %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Association</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Join Date</th>
+                                    <th>DOS Certified</th>
+                                    <th>Certification Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sa in student_associations %}
+                                <tr>
+                                    <td>{{ sa.association.name }}</td>
+                                    <td>{{ sa.association.get_association_type_display }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ status_colors|get_item:sa.status|default:'secondary' }}">
+                                            {{ sa.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ sa.join_date|date:"Y-m-d" }}</td>
+                                    <td>
+                                        {% if sa.dos_certified %}
+                                            <span class="badge bg-success">Yes</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ sa.dos_certification_date|date:"Y-m-d"|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No association memberships</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Information Tabs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="additionalTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="laptop-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#laptop" type="button" role="tab">
+                                <i class="fas fa-laptop"></i> Laptop Scheme
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="dead-semester-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#dead-semester" type="button" role="tab">
+                                <i class="fas fa-calendar-times"></i> Dead Semester
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="medical-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#medical" type="button" role="tab">
+                                <i class="fas fa-heartbeat"></i> Medical
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="internship-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#internship" type="button" role="tab">
+                                <i class="fas fa-briefcase"></i> Internship
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="clearance-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#clearance" type="button" role="tab">
+                                <i class="fas fa-clipboard-check"></i> Clearance
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="additionalTabsContent">
+                        <!-- Laptop Scheme Tab -->
+                        <div class="tab-pane fade show active" id="laptop" role="tabpanel">
+                            {% if laptop_scheme %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th class="w-50">Total Cost:</th>
+                                            <td>UGX {{ laptop_scheme.total_cost|floatformat:0 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Payment Made:</th>
+                                            <td>UGX {{ laptop_scheme.payment_made|floatformat:0 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Balance:</th>
+                                            <td>
+                                                <span class="badge {% if laptop_scheme.balance > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                                                    UGX {{ laptop_scheme.balance|floatformat:0 }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Laptop Serial:</th>
+                                            <td>{{ laptop_scheme.laptop_serial_number|default:"Not provided" }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    {% if laptop_scheme.comments %}
+                                    <div class="card">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0">Comments</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-0">{{ laptop_scheme.comments }}</p>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-laptop fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No laptop scheme record found</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Dead Semester Tab -->
+                        <div class="tab-pane fade" id="dead-semester" role="tabpanel">
+                            {% if dead_semester_apps %}
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Application Date</th>
+                                            <th>Type</th>
+                                            <th>Reason</th>
+                                            <th>Approval Status</th>
+                                            <th>Approved</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for app in dead_semester_apps %}
+                                        <tr>
+                                            <td>{{ app.application_date|date:"Y-m-d" }}</td>
+                                            <td>{{ app.get_application_type_display }}</td>
+                                            <td>{{ app.reason|truncatechars:100 }}</td>
+                                            <td>
+                                                {% if app.approval_status == "APPROVED" %}
+                                                    <span class="badge bg-success">Approved</span>
+                                                {% elif app.approval_status == "PARTIALLY_APPROVED" %}
+                                                    <span class="badge bg-warning">Partial</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if app.approved %}
+                                                    <span class="badge bg-success">Yes</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">No</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No dead semester applications</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Medical Tab -->
+                        <div class="tab-pane fade" id="medical" role="tabpanel">
+                            {% if medical_registrations %}
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Access Number</th>
+                                            <th>Medical Officer</th>
+                                            <th>Registration Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for mr in medical_registrations %}
+                                        <tr>
+                                            <td>{{ mr.access_number.access_number }}</td>
+                                            <td>{{ mr.medical_officer_name }}</td>
+                                            <td>{{ mr.registration_date|date:"Y-m-d" }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-heartbeat fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No medical registrations</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Internship Tab -->
+                        <div class="tab-pane fade" id="internship" role="tabpanel">
+                            {% if internships %}
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Access Number</th>
+                                            <th>Status</th>
+                                            <th>Company</th>
+                                            <th>Period</th>
+                                            <th>Supervisor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for intern in internships %}
+                                        <tr>
+                                            <td>{{ intern.access_number.access_number }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ status_colors|get_item:intern.status|default:'secondary' }}">
+                                                    {{ intern.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ intern.company_name|default:"Not specified" }}</td>
+                                            <td>
+                                                {% if intern.start_date %}
+                                                    {{ intern.start_date|date:"Y-m-d" }} to 
+                                                    {{ intern.end_date|date:"Y-m-d"|default:"Present" }}
+                                                {% else %}
+                                                    Not specified
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ intern.supervisor_name|default:"Not specified" }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No internship records</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Clearance Tab -->
+                        <div class="tab-pane fade" id="clearance" role="tabpanel">
+                            <div class="row">
+                                <!-- Semester Clearances -->
+                                <div class="col-md-6">
+                                    <h6 class="text-primary">Semester Clearances</h6>
+                                    {% if semester_clearances %}
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Access Number</th>
+                                                    <th>Finance</th>
+                                                    <th>Academic</th>
+                                                    <th>Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for sc in semester_clearances %}
+                                                <tr>
+                                                    <td>{{ sc.access_number.access_number }}</td>
+                                                    <td>
+                                                        {% if sc.finance_cleared %}
+                                                            <span class="badge bg-success">Cleared</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">Pending</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if sc.academic_cleared %}
+                                                            <span class="badge bg-success">Cleared</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">Pending</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ sc.created_at|date:"Y-m-d" }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {% else %}
+                                    <p class="text-muted">No semester clearances</p>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Graduation Clearance -->
+                                <div class="col-md-6">
+                                    <h6 class="text-primary">Graduation Clearance</h6>
+                                    {% if graduation_clearance %}
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th class="w-50">All Requirements Met:</th>
+                                            <td>
+                                                {% if graduation_clearance.all_requirements_met %}
+                                                    <span class="badge bg-success">Yes</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">No</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Clearance Date:</th>
+                                            <td>{{ graduation_clearance.clearance_date|date:"Y-m-d"|default:"Not cleared" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Approving Officer:</th>
+                                            <td>{{ graduation_clearance.approving_officer_name|default:"Not specified" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Designation:</th>
+                                            <td>{{ graduation_clearance.approving_officer_designation|default:"Not specified" }}</td>
+                                        </tr>
+                                    </table>
+                                    {% else %}
+                                    <p class="text-muted">No graduation clearance record</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <a href="{% url 'pass_book:generate_report' student.id %}" class="btn btn-primary me-2">
+                        <i class="fas fa-file-pdf"></i> Generate Full Report
+                    </a>
+                    <a href="{% url 'pass_book:print_id' student.id %}" class="btn btn-secondary me-2">
+                        <i class="fas fa-id-card"></i> Print ID Card
+                    </a>
+                    <button class="btn btn-info" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print This Page
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .w-40 {
+        width: 40% !important;
+    }
+    
+    .card {
+        border: 1px solid #e0e0e0;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .card-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+        font-weight: 600;
+    }
+    
+    .table th {
+        font-weight: 600;
+        background-color: #f8f9fa;
+    }
+    
+    @media print {
+        .btn, .nav-tabs, .breadcrumb {
+            display: none !important;
+        }
+        
+        .card {
+            border: 1px solid #000 !important;
+            box-shadow: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+    
+    // Auto-refresh data every 5 minutes
+    setTimeout(function() {
+        location.reload();
+    }, 300000); // 5 minutes
+</script>
+<script>
+    window.addEventListener('load', function() {
+        const minioIP = '192.168.43.57:9000';
+        
+        function replaceMinioURLs() {
+            // Replace in all img tags
+            document.querySelectorAll('img[src*="minio:9000"]').forEach(img => {
+                img.src = img.src.replace('minio:9000', minioIP);
+            });
+            
+            // Replace in background images
+            document.querySelectorAll('*').forEach(el => {
+                const bgImage = window.getComputedStyle(el).backgroundImage;
+                if (bgImage && bgImage.includes('minio:9000')) {
+                    el.style.backgroundImage = bgImage.replace('minio:9000', minioIP);
+                }
+            });
+            
+            // Replace in source tags
+            document.querySelectorAll('source[src*="minio:9000"], source[srcset*="minio:9000"]').forEach(source => {
+                if (source.src) source.src = source.src.replace('minio:9000', minioIP);
+                if (source.srcset) source.srcset = source.srcset.replace(/minio:9000/g, minioIP);
+            });
+            
+            // Replace in anchor tags
+            document.querySelectorAll('a[href*="minio:9000"]').forEach(link => {
+                link.href = link.href.replace('minio:9000', minioIP);
+            });
+        }
+        
+        // Run on load
+        replaceMinioURLs();
+        
+        // Run on page show (handles back/forward cache)
+        window.addEventListener('pageshow', replaceMinioURLs);
+        
+        // Handle dynamically loaded content
+        new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === 1) {
+                        if (node.tagName === 'IMG' && node.src && node.src.includes('minio:9000')) {
+                            node.src = node.src.replace('minio:9000', minioIP);
+                        }
+                        node.querySelectorAll('img[src*="minio:9000"]').forEach(img => {
+                            img.src = img.src.replace('minio:9000', minioIP);
+                        });
+                    }
+                });
+            });
+        }).observe(document.body, { childList: true, subtree: true });
+    });
+    </script>
+{% endblock %}

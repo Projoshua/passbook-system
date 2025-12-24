@@ -1,0 +1,62 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Select Student for Dead Semester Application{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Select Student</h2>
+        <a href="{% url 'pass_book:dead_semester_applications' %}" class="btn btn-outline-secondary btn-sm">← Back to Applications</a>
+    </div>
+    <p class="text-muted">Search by name, registration number, or Semester Code (e.g., SLAU-2025-909-AA02).</p>
+
+    <!-- Search Form -->
+    <form method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Search student by name, reg. no., or access no." value="{{ query|default:'' }}">
+            <button class="btn btn-primary" type="submit">
+                <i class="bi bi-search"></i> Search
+            </button>
+        </div>
+    </form>
+
+    <!-- Results -->
+    {% if query %}
+        {% if students %}
+            <div class="row">
+                {% for student in students %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ student.name }}</h5>
+                            <p class="card-text">
+                                <strong>Reg. No:</strong> {{ student.registration_number }}<br>
+                                <strong>Semester Code:</strong> {{ student.static_access_number }}<br>
+                                <strong>Program:</strong> {{ student.program.name }}<br>
+                                <strong>Session:</strong> {{ student.get_session_display }}
+                            </p>
+                            <div class="mt-auto">
+                                <a href="{% url 'pass_book:dead_semester_create' student.id %}" class="btn btn-success w-100">
+                                    Create Dead Semester App
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i> No students found matching “<strong>{{ query }}</strong>”.
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Enter a search term above to find a student.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+

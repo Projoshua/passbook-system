@@ -1,0 +1,93 @@
+
+<!-- templates/pass_book/access_number_update.html -->
+{% extends 'student_registration/base.html' %}
+
+{% block title %}Update Access Number - {{ object.access_number }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-warning text-dark">
+      <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Update Access Number</h4>
+    </div>
+    <div class="card-body">
+      <p class="text-muted">
+        <strong>Student:</strong> {{ object.student.name }}<br>
+        <strong>Current Access Number:</strong> <code>{{ object.access_number }}</code>
+      </p>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Student</label>
+            {{ form.student }}
+            {% if form.student.errors %}
+              <div class="text-danger small">{{ form.student.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Academic Year</label>
+            {{ form.academic_year }}
+            {% if form.academic_year.errors %}
+              <div class="text-danger small">{{ form.academic_year.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Semester</label>
+            {{ form.semester }}
+            {% if form.semester.errors %}
+              <div class="text-danger small">{{ form.semester.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Year of Study</label>
+            {{ form.year_of_study }}
+            {% if form.year_of_study.errors %}
+              <div class="text-danger small">{{ form.year_of_study.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-12 form-check form-switch">
+            <input type="checkbox" class="form-check-input" id="id_is_active" name="is_active" {% if object.is_active %}checked{% endif %}>
+            <label class="form-check-label" for="id_is_active">
+              <strong>Active Status</strong>
+              <br>
+              <small class="text-muted">
+                {% if object.is_active %}
+                  Currently <span class="badge bg-success">Active</span> — uncheck to deactivate
+                {% else %}
+                  Currently <span class="badge bg-danger">Inactive</span> — check to reactivate
+                {% endif %}
+              </small>
+            </label>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-save"></i> Save Changes
+          </button>
+          <a href="{% url 'pass_book:access_number_list' %}" class="btn btn-secondary">
+            <i class="bi bi-x-circle"></i> Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

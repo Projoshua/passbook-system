@@ -1,0 +1,109 @@
+
+{% extends 'student_registration/base.html' %}
+{% load humanize %}
+{% block title %}Laptop Scheme Participants{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h3><i class="fas fa-laptop me-2"></i> Laptop Scheme Participants</h3>
+    <a href="{% url 'pass_book:select_student_for_laptop_scheme' %}?next={{ request.path }}" class="btn btn-outline-primary">
+        <i class="fas fa-plus me-1"></i> Enroll New Student
+    </a>
+</div>
+
+<div class="card card-custom">
+    <div class="card-body">
+        {% if schemes %}
+            <div class="table-responsive">
+                <table class="table table-hover table-custom">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Access Number</th>
+                            <th>Program</th>
+                            <th>Total Cost</th>
+                            <th>Payment Made</th>
+                            <th>Balance</th>
+                            <th>Serial Number</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for scheme in schemes %}
+                        <tr>
+                            <td>{{ scheme.student.name }}</td>
+                            <td><code>{{ scheme.student.static_access_number }}</code></td>
+                            <td>{{ scheme.student.program.name }}</td>
+                            <td class="fw-bold">UGX {{ scheme.total_cost|floatformat:0|intcomma }}</td>
+                            <td class="text-success fw-bold">UGX {{ scheme.payment_made|floatformat:0|intcomma }}</td>
+                            <td class="{% if scheme.balance > 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
+                                UGX {{ scheme.balance|floatformat:0|intcomma }}
+                            </td>
+                            <td>
+                                {% if scheme.laptop_serial_number %}
+                                    <code>{{ scheme.laptop_serial_number }}</code>
+                                {% else %}
+                                    <span class="text-muted">Not assigned</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'pass_book:laptop_scheme_update' scheme.pk %}" 
+                                   class="btn btn-sm btn-outline-warning me-1"
+                                   title="Edit Record">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'pass_book:student_detail' scheme.student.pk %}"
+                                   class="btn btn-sm btn-outline-info"
+                                   title="View Student Profile">
+                                    <i class="fas fa-user"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">&laquo; First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-laptop fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No students enrolled in the laptop scheme yet.</h5>
+                <a href="{% url 'pass_book:select_student_for_laptop_scheme' %}?next={{ request.path }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus me-1"></i> Enroll First Student
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,26 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+    <h1>Sign Up</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-group">
+            <label>Account Type:</label>
+            <div>
+                <input type="radio" id="student" name="user_type" value="student" checked>
+                <label for="student">Student</label>
+            </div>
+            <div>
+                <input type="radio" id="lecturer" name="user_type" value="lecturer">
+                <label for="lecturer">Lecturer</label>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+    </form>
+{% endblock %}
+
+

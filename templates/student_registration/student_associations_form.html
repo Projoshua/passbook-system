@@ -1,0 +1,188 @@
+
+{% extends 'student_registration/base.html' %}
+{% load static %}
+
+{% block title %}Manage {{ access_number }} Associations{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2><i class="fas fa-users-cog me-2"></i> Manage Associations for {{ access_number }}</h2>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" id="associations-form">
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    {% if formset.non_form_errors %}
+      <div class="alert alert-danger">
+        {{ formset.non_form_errors }}
+      </div>
+    {% endif %}
+
+    <!-- Existing Memberships -->
+    <div class="mb-4">
+      <h4><i class="fas fa-clipboard-list me-2"></i> Current Memberships</h4>
+      {% for form in formset %}
+        <div class="border p-3 mb-3 rounded bg-light">
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="row">
+            {% for field in form.visible_fields %}
+              <div class="mb-3 col-md-6">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                  <div class="text-danger small">{{ field.errors }}</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+
+          {% for hidden in form.hidden_fields %}
+            {{ hidden }}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- AVAILABLE ASSOCIATIONS WITH ASSIGN BUTTON -->
+    <hr class="my-4">
+    <h4><i class="fas fa-plus-circle me-2"></i> Available Associations</h4>
+    {% if available_associations %}
+      <div class="row">
+        {% for assoc in available_associations %}
+          <!-- Check if already in memberships -->
+          {% if assoc not in memberships %}
+            <div class="col-md-6 col-lg-4 mb-3">
+              <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                  <h5 class="card-title">{{ assoc.name }}</h5>
+                  <p class="card-text">
+                    <span class="badge bg-info">{{ assoc.get_association_type_display }}</span><br>
+                    {% if assoc.description %}
+                      <small class="text-muted">{{ assoc.description|truncatewords:15 }}</small>
+                    {% endif %}
+                  </p>
+                  <button type="button"
+                          class="btn btn-sm btn-outline-primary mt-auto assign-btn"
+                          data-association-id="{{ assoc.id }}"
+                          data-association-name="{{ assoc.name }}">
+                    <i class="fas fa-user-plus me-1"></i> Assign to Student
+                  </button>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- EMPTY FORM (hidden) — used to add new association -->
+      <div id="empty-form" style="display:none;">
+        {{ formset.empty_form }}
+      </div>
+
+    {% else %}
+      <p class="text-muted">No active associations available.</p>
+    {% endif %}
+
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn btn-primary btn-lg">
+        <i class="fas fa-save me-1"></i> Save All Changes
+      </button>
+      <a href="{% url 'pass_book:association_access_number_detail' access_number=access_number.access_number %}" 
+         class="btn btn-secondary btn-lg">
+        <i class="fas fa-times me-1"></i> Cancel
+      </a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const assignButtons = document.querySelectorAll('.assign-btn');
+    const emptyForm = document.getElementById('empty-form');
+    const formContainer = document.querySelector('form');
+    const managementForm = document.querySelector('#id_form-TOTAL_FORMS');
+    const totalForms = parseInt(managementForm.value);
+
+    assignButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const assocId = this.getAttribute('data-association-id');
+            const assocName = this.getAttribute('data-association-name');
+
+            // Clone empty form
+            const newForm = emptyForm.cloneNode(true);
+            const formHtml = newForm.innerHTML.replace(/__prefix__/g, totalForms);
+
+            // Create div to hold new form
+            const formDiv = document.createElement('div');
+            formDiv.className = 'border p-3 mb-3 rounded bg-success bg-opacity-10';
+            formDiv.innerHTML = `
+                <h6><i class="fas fa-plus me-2"></i> Adding: ${assocName}</h6>
+                ${formHtml}
+            `;
+
+            // Insert before "Available Associations" or submit button
+            const hr = document.querySelector('hr.my-4');
+            if (hr) {
+                hr.parentNode.insertBefore(formDiv, hr);
+            } else {
+                formContainer.appendChild(formDiv);
+            }
+
+            // Set association field value
+            const assocSelect = formDiv.querySelector('select[name$="association"]');
+            if (assocSelect) {
+                assocSelect.value = assocId;
+            }
+
+            // Set status to ACTIVE by default
+            const statusSelect = formDiv.querySelector('select[name$="status"]');
+            if (statusSelect) {
+                statusSelect.value = 'ACTIVE';
+            }
+
+            // Update management form
+            managementForm.value = totalForms + 1;
+
+            // Disable this button to prevent duplicate assignment
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-check me-1"></i> Assigned!';
+            this.classList.remove('btn-outline-primary');
+            this.classList.add('btn-success');
+
+            // Show success toast (optional)
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed bottom-0 end-0 m-3';
+            alertDiv.style.zIndex = 1050;
+            alertDiv.innerHTML = `
+                <i class="fas fa-user-plus me-2"></i> Assigned to ${assocName}!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+
+            // Auto-dismiss alert after 3 seconds
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alertDiv);
+                bsAlert.close();
+            }, 3000);
+        });
+    });
+});
+</script>
+{% endblock %}
+
+

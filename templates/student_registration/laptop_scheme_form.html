@@ -1,0 +1,116 @@
+
+{% extends 'student_registration/base.html' %}
+{% load humanize %}
+{% load widget_tweaks %}
+{% block title %}
+    {% if scheme %}Edit Laptop Scheme{% else %}Enroll in Laptop Scheme{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h3>
+        <i class="fas fa-laptop me-2"></i>
+        {% if scheme %}
+            Edit Laptop Scheme: {{ scheme.student.name }}
+        {% else %}
+            Enroll {{ student.name }} in Laptop Scheme
+        {% endif %}
+    </h3>
+</div>
+
+<div class="card card-custom">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Student Name</label>
+                    <input type="text" class="form-control-plaintext" value="{{ scheme.student.name|default:student.name }}" readonly>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Access Number</label>
+                    <input type="text" class="form-control-plaintext" value="{{ scheme.student.static_access_number|default:student.static_access_number }}" readonly>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Total Cost (UGX)</label>
+                    {{ form.total_cost|add_class:"form-control" }}
+                    {% if form.total_cost.errors %}<div class="text-danger small">{{ form.total_cost.errors }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Payment Made (UGX)</label>
+                    {{ form.payment_made|add_class:"form-control" }}
+                    {% if form.payment_made.errors %}<div class="text-danger small">{{ form.payment_made.errors }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Balance (UGX)</label>
+                    <input type="text" class="form-control-plaintext bg-light" 
+                           value="UGX {{ form.instance.balance|default:1500000|floatformat:0|intcomma }}" readonly>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Laptop Serial Number</label>
+                {{ form.laptop_serial_number|add_class:"form-control" }}
+                {% if form.laptop_serial_number.errors %}<div class="text-danger small">{{ form.laptop_serial_number.errors }}</div>{% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Comments</label>
+                {{ form.comments|add_class:"form-control" }}
+                {% if form.comments.errors %}<div class="text-danger small">{{ form.comments.errors }}</div>{% endif %}
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-custom">
+                    <i class="fas fa-save me-1"></i> {% if scheme %}Update{% else %}Enroll{% endif %}
+                </button>
+                <a href="{% if scheme %}{% url 'pass_book:student_detail' scheme.student.pk %}{% else %}{% url 'pass_book:student_detail' student.pk %}{% endif %}" 
+                   class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.form-control-plaintext.bg-light {
+    background-color: #f8f9fa !important;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-calculate balance on payment change (client-side preview)
+document.addEventListener('DOMContentLoaded', function() {
+    const totalCost = document.querySelector('input[name="total_cost"]');
+    const paymentMade = document.querySelector('input[name="payment_made"]');
+    const balanceDisplay = document.querySelector('input[readonly]:last-of-type');
+
+    function updateBalance() {
+        if (totalCost && paymentMade && balanceDisplay) {
+            const total = parseFloat(totalCost.value) || 0;
+            const paid = parseFloat(paymentMade.value) || 0;
+            const balance = total - paid;
+            balanceDisplay.value = 'UGX ' + balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+    }
+
+    if (paymentMade) {
+        paymentMade.addEventListener('input', updateBalance);
+    }
+});
+</script>
+{% endblock %}
+
+

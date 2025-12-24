@@ -1,0 +1,59 @@
+
+{% extends "student_registration/reports/base.html" %}
+{% load static %}
+
+{% block report_content %}
+<div class="filters no-print">
+    <h3>Filter by Academic Year</h3>
+    <form method="get">
+        <label for="academic_year">Academic Year:</label>
+        <select name="academic_year" id="academic_year">
+            <option value="">All Years</option>
+            {% for year in academic_years %}
+            <option value="{{ year.id }}" {% if selected_year and year.id == selected_year.id %}selected{% endif %}>
+                {{ year.year_label }}
+            </option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Apply Filters">
+    </form>
+</div>
+
+{% if selected_year %}
+    <div class="summary-box">
+        Enrollment Report for Academic Year: <strong>{{ selected_year.year_label }}</strong>
+    </div>
+{% endif %}
+
+<table>
+    <thead>
+        <tr>
+            <th>Program Code</th>
+            <th>Program Name</th>
+            <th>Faculty</th>
+            <th>Student Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for program in programs %}
+        <tr>
+            <td>{{ program.code }}</td>
+            <td>{{ program.name }}</td>
+            <td>{{ program.faculty }}</td>
+            <td class="text-center"><strong>{{ program.student_count }}</strong></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No programs found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if programs %}
+<div class="summary-box">
+    Total Students Enrolled: <strong>{{ programs|length }}</strong> programs, <strong>{{ total_students }}</strong> students</div>
+{% endif %}
+{% endblock %}
+
+

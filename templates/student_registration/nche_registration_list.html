@@ -1,0 +1,137 @@
+
+{% extends 'student_registration/base.html' %}
+{% load static %}
+
+{% block title %}NCHE Registrations{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user-graduate me-2"></i>NCHE Registrations</h2>
+        <div>
+            <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#filterForm">
+                <i class="fas fa-filter me-1"></i>Filter
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Form (Collapsible) -->
+    <div class="collapse mb-4" id="filterForm">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Access Number</label>
+                        <input type="text" class="form-control" name="access_number" 
+                               value="{{ request.GET.access_number }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Officer Name</label>
+                        <input type="text" class="form-control" name="officer_name" 
+                               value="{{ request.GET.officer_name }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Registration Date</label>
+                        <input type="date" class="form-control" name="registration_date" 
+                               value="{{ request.GET.registration_date }}">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-1"></i>Filter
+                        </button>
+                        <a href="{% url 'pass_book:nche_registration_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registrations Table -->
+    <div class="card shadow">
+        <div class="card-body">
+            {% if registrations %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Access Number</th>
+                                <th>Student Name</th>
+                                <th>Officer Name</th>
+                                <th>Registration Date</th>
+                                <th>Academic Year</th>
+                                <th>Semester</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for registration in registrations %}
+                            <tr>
+                                <td>
+                                    <code>{{ registration.access_number.access_number }}</code>
+                                </td>
+                                <td>{{ registration.access_number.student.name }}</td>
+                                <td>{{ registration.officer_name }}</td>
+                                <td>{{ registration.registration_date|date:"M d, Y" }}</td>
+                                <td>{{ registration.access_number.academic_year }}</td>
+                                <td>{{ registration.access_number.semester }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{% url 'pass_book:detail' access_number=registration.access_number.access_number %}" 
+                                           class="btn btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'pass_book:nche_registration' access_number=registration.access_number.access_number %}" 
+                                           class="btn btn-outline-secondary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'pass_book:nche_registration_delete' access_number=registration.access_number.access_number %}" 
+                                           class="btn btn-outline-danger" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No NCHE registrations found</h5>
+                    <p class="text-muted">No registrations match your current filters.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

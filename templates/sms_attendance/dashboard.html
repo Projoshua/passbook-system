@@ -1,0 +1,18 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<h2>Attendance Dashboard</h2>
+<h3>Active Lectures</h3>
+<ul>
+    {% for unit in active_units %}
+    <li>
+        {{ unit.code }} - {{ unit.name }}
+        <a href="{% url 'take-attendance' unit.pk %}" class="btn btn-primary">Take Attendance</a>
+    </li>
+    {% empty %}
+    <li>No active lectures right now.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+

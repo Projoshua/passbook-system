@@ -1,0 +1,972 @@
+{% extends "student_registration/reports/base.html" %}
+{% load static %}
+
+{% block title %}{{ report_title }}{% endblock %}
+
+{% block report_content %}
+<div class="filters no-print">
+    <h3>Filter Semester Clearance Report</h3>
+    <form method="get" action="{% url 'pass_book:semester_clearance_report' %}">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="semester">Semester: <span class="required">*</span></label>
+                <select name="semester" id="semester" required onchange="this.form.submit()">
+                    <option value="">-- Select Semester --</option>
+                    {% for semester in semesters %}
+                    <option value="{{ semester.id }}" 
+                        {% if filters.semester == semester.id|stringformat:"s" %}selected{% endif %}>
+                        {{ semester }} ({{ semester.academic_year.year_label }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% if selected_semester %}
+            <div class="filter-group">
+                <label for="search">Search:</label>
+                <input type="text" 
+                       name="search" 
+                       id="search" 
+                       value="{{ filters.search }}" 
+                       placeholder="Name, Access #, Contact...">
+            </div>
+
+            <div class="filter-group">
+                <label for="finance_cleared">Finance Status:</label>
+                <select name="finance_cleared" id="finance_cleared">
+                    <option value="">All</option>
+                    <option value="True" {% if filters.finance_cleared == "True" %}selected{% endif %}>Cleared</option>
+                    <option value="False" {% if filters.finance_cleared == "False" %}selected{% endif %}>Not Cleared</option>
+                    <option value="no_record" {% if filters.finance_cleared == "no_record" %}selected{% endif %}>No Record</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="academic_cleared">Academic Status:</label>
+                <select name="academic_cleared" id="academic_cleared">
+                    <option value="">All</option>
+                    <option value="True" {% if filters.academic_cleared == "True" %}selected{% endif %}>Cleared</option>
+                    <option value="False" {% if filters.academic_cleared == "False" %}selected{% endif %}>Not Cleared</option>
+                    <option value="no_record" {% if filters.academic_cleared == "no_record" %}selected{% endif %}>No Record</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="orientation_cleared">Orientation Status:</label>
+                <select name="orientation_cleared" id="orientation_cleared">
+                    <option value="">All</option>
+                    <option value="True" {% if filters.orientation_cleared == "True" %}selected{% endif %}>Cleared</option>
+                    <option value="False" {% if filters.orientation_cleared == "False" %}selected{% endif %}>Not Cleared</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="assimilation_cleared">Assimilation Status:</label>
+                <select name="assimilation_cleared" id="assimilation_cleared">
+                    <option value="">All</option>
+                    <option value="True" {% if filters.assimilation_cleared == "True" %}selected{% endif %}>Cleared</option>
+                    <option value="False" {% if filters.assimilation_cleared == "False" %}selected{% endif %}>Not Cleared</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn-primary">Apply Filters</button>
+            <a href="{% url 'pass_book:semester_clearance_report' %}?semester={{ selected_semester.id }}" 
+               class="btn-secondary">Clear Filters</a>
+        </div>
+        {% endif %}
+    </form>
+
+    {% if selected_semester %}
+    <div class="action-buttons">
+        <form method="post" 
+              action="{% url 'pass_book:create_clearance_records' selected_semester.id %}" 
+              style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-create">
+                <span>➕</span> Create Missing Clearance Records
+            </button>
+        </form>
+        <a href="{% url 'pass_book:export_clearance_csv' %}?semester={{ selected_semester.id }}" 
+           class="btn-export">
+            <span>📥</span> Export to CSV
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% if show_empty_state %}
+    <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>No Semester Selected</h3>
+        <p>Please select a semester from the dropdown above to view the clearance report.</p>
+    </div>
+{% elif not registrations %}
+    <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>No Records Found</h3>
+        <p>No registration records found for the selected filters.</p>
+        <p>Try adjusting your filter criteria.</p>
+    </div>
+{% else %}
+    {# Statistics Dashboard #}
+    <div class="stats-dashboard no-print">
+        <div class="stat-card total">
+            <div class="stat-icon">👥</div>
+            <h4>Total Students</h4>
+            <div class="stat-value">{{ total_students }}</div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-icon">✅</div>
+            <h4>Fully Cleared</h4>
+            <div class="stat-value">{{ fully_cleared_count }}</div>
+            <div class="stat-percent">{{ fully_cleared_percent|floatformat:1 }}%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ fully_cleared_percent }}%;"></div>
+            </div>
+        </div>
+        
+        <div class="stat-card finance">
+            <div class="stat-icon">💰</div>
+            <h4>Finance Cleared</h4>
+            <div class="stat-value">{{ finance_cleared_count }}</div>
+            <div class="stat-percent">{{ finance_cleared_percent|floatformat:1 }}%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ finance_cleared_percent }}%;"></div>
+            </div>
+        </div>
+        
+        <div class="stat-card academic">
+            <div class="stat-icon">📚</div>
+            <h4>Academic Cleared</h4>
+            <div class="stat-value">{{ academic_cleared_count }}</div>
+            <div class="stat-percent">{{ academic_cleared_percent|floatformat:1 }}%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ academic_cleared_percent }}%;"></div>
+            </div>
+        </div>
+        
+        <div class="stat-card orientation">
+            <div class="stat-icon">🎓</div>
+            <h4>Orientation Cleared</h4>
+            <div class="stat-value">{{ orientation_cleared_count }}</div>
+            <div class="stat-percent">{{ orientation_cleared_percent|floatformat:1 }}%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ orientation_cleared_percent }}%;"></div>
+            </div>
+        </div>
+        
+        <div class="stat-card assimilation">
+            <div class="stat-icon">🤝</div>
+            <h4>Assimilation Cleared</h4>
+            <div class="stat-value">{{ assimilation_cleared_count }}</div>
+            <div class="stat-percent">{{ assimilation_cleared_percent|floatformat:1 }}%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ assimilation_cleared_percent }}%;"></div>
+            </div>
+        </div>
+        
+        {% if no_clearance_record > 0 %}
+        <div class="stat-card warning">
+            <div class="stat-icon">⚠️</div>
+            <h4>No Clearance Record</h4>
+            <div class="stat-value">{{ no_clearance_record }}</div>
+            <p class="stat-note">Students need clearance records created</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {# Summary Info #}
+    <div class="report-summary no-print">
+        <h4>📊 Report Summary for {{ selected_semester }}</h4>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <strong>Total Students:</strong> {{ total_students }}
+            </div>
+            <div class="summary-item">
+                <strong>With Clearance Records:</strong> {{ students_with_clearance }}
+            </div>
+            <div class="summary-item">
+                <strong>Generated:</strong> {{ now|date:"F d, Y - g:i A" }}
+            </div>
+        </div>
+    </div>
+
+    {# Data Table #}
+    <div class="table-responsive">
+        <table class="clearance-table">
+            <thead>
+                <tr>
+                    <th rowspan="2">Access Number</th>
+                    <th rowspan="2">Student Name</th>
+                    <th rowspan="2">Program</th>
+                    <th rowspan="2">Contact</th>
+                    <th colspan="3" class="group-header finance-header">Finance Clearance</th>
+                    <th colspan="3" class="group-header academic-header">Academic Clearance</th>
+                    <th rowspan="2">Orientation</th>
+                    <th rowspan="2">Assimilation</th>
+                    <th rowspan="2">Overall Status</th>
+                </tr>
+                <tr>
+                    <th class="sub-header">Status</th>
+                    <th class="sub-header">Officer</th>
+                    <th class="sub-header">Date</th>
+                    <th class="sub-header">Status</th>
+                    <th class="sub-header">Officer</th>
+                    <th class="sub-header">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg in registrations %}
+                {% with clearance=reg.access_number.clearance %}
+                {% if clearance %}
+                    {# Check if student is fully cleared #}
+                    {% if clearance.finance_cleared and clearance.academic_cleared and reg.orientation_cleared and reg.assimilation_cleared %}
+                        <tr class="row-cleared">
+                    {% else %}
+                        <tr class="row-pending">
+                    {% endif %}
+                        <td class="mono">{{ reg.access_number.access_number }}</td>
+                        <td class="student-name">{{ reg.access_number.student.name }}</td>
+                        <td class="text-center">{{ reg.access_number.student.program.code }}</td>
+                        <td class="mono">{{ reg.access_number.student.student_contact }}</td>
+                        
+                        {# Finance Clearance #}
+                        <td class="text-center status-cell">
+                            {% if clearance.finance_cleared %}
+                                <span class="status-badge success">✓ Cleared</span>
+                            {% else %}
+                                <span class="status-badge pending">✗ Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if clearance.finance_officer_name %}
+                                {{ clearance.finance_officer_name }}
+                                {% if clearance.finance_officer_designation %}
+                                    <br><small class="text-muted">{{ clearance.finance_officer_designation }}</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if clearance.finance_clearance_date %}
+                                {{ clearance.finance_clearance_date|date:"M d, Y" }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        {# Academic Clearance #}
+                        <td class="text-center status-cell">
+                            {% if clearance.academic_cleared %}
+                                <span class="status-badge success">✓ Cleared</span>
+                            {% else %}
+                                <span class="status-badge pending">✗ Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if clearance.academic_officer_name %}
+                                {{ clearance.academic_officer_name }}
+                                {% if clearance.academic_officer_designation %}
+                                    <br><small class="text-muted">{{ clearance.academic_officer_designation }}</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if clearance.academic_clearance_date %}
+                                {{ clearance.academic_clearance_date|date:"M d, Y" }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        {# Orientation & Assimilation #}
+                        <td class="text-center status-cell">
+                            {% if reg.orientation_cleared %}
+                                <span class="status-badge success">✓ Yes</span>
+                            {% else %}
+                                <span class="status-badge pending">✗ No</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center status-cell">
+                            {% if reg.assimilation_cleared %}
+                                <span class="status-badge success">✓ Yes</span>
+                            {% else %}
+                                <span class="status-badge pending">✗ No</span>
+                            {% endif %}
+                        </td>
+                        
+                        {# Overall Status #}
+                        <td class="text-center status-cell">
+                            {% if clearance.finance_cleared and clearance.academic_cleared and reg.orientation_cleared and reg.assimilation_cleared %}
+                                <span class="badge-large badge-success">✅ CLEARED</span>
+                            {% else %}
+                                <span class="badge-large badge-warning">⏳ PENDING</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr class="row-no-record">
+                        <td class="mono">{{ reg.access_number.access_number }}</td>
+                        <td class="student-name">{{ reg.access_number.student.name }}</td>
+                        <td class="text-center">{{ reg.access_number.student.program.code }}</td>
+                        <td class="mono">{{ reg.access_number.student.student_contact }}</td>
+                        
+                        {# Finance Clearance #}
+                        <td class="text-center status-cell">
+                            <span class="status-badge no-record">No Record</span>
+                        </td>
+                        <td>
+                            <span class="text-muted">-</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="text-muted">-</span>
+                        </td>
+                        
+                        {# Academic Clearance #}
+                        <td class="text-center status-cell">
+                            <span class="status-badge no-record">No Record</span>
+                        </td>
+                        <td>
+                            <span class="text-muted">-</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="text-muted">-</span>
+                        </td>
+                        
+                        {# Orientation & Assimilation #}
+                        <td class="text-center status-cell">
+                            {% if reg.orientation_cleared %}
+                                <span class="status-badge success">✓ Yes</span>
+                            {% else %}
+                                <span class="status-badge pending">✗ No</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center status-cell">
+                            {% if reg.assimilation_cleared %}
+                                <span class="status-badge success">✓ Yes</span>
+                            {% else %}
+                                <span class="status-badge pending">✗ No</span>
+                            {% endif %}
+                        </td>
+                        
+                        {# Overall Status #}
+                        <td class="text-center status-cell">
+                            <span class="badge-large badge-danger">NO RECORD</span>
+                        </td>
+                    </tr>
+                {% endif %}
+                {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Pagination #}
+    {% if registrations.has_other_pages %}
+    <div class="pagination no-print">
+        <div class="pagination-info">
+            Showing {{ registrations.start_index }} to {{ registrations.end_index }} of {{ registrations.paginator.count }} entries
+        </div>
+        <div class="pagination-controls">
+            {% if registrations.has_previous %}
+                <a href="?semester={{ filters.semester }}&page=1{% if filters.search %}&search={{ filters.search }}{% endif %}{% if filters.finance_cleared %}&finance_cleared={{ filters.finance_cleared }}{% endif %}{% if filters.academic_cleared %}&academic_cleared={{ filters.academic_cleared }}{% endif %}{% if filters.orientation_cleared %}&orientation_cleared={{ filters.orientation_cleared }}{% endif %}{% if filters.assimilation_cleared %}&assimilation_cleared={{ filters.assimilation_cleared }}{% endif %}" 
+                   class="page-btn">First</a>
+                <a href="?semester={{ filters.semester }}&page={{ registrations.previous_page_number }}{% if filters.search %}&search={{ filters.search }}{% endif %}{% if filters.finance_cleared %}&finance_cleared={{ filters.finance_cleared }}{% endif %}{% if filters.academic_cleared %}&academic_cleared={{ filters.academic_cleared }}{% endif %}{% if filters.orientation_cleared %}&orientation_cleared={{ filters.orientation_cleared }}{% endif %}{% if filters.assimilation_cleared %}&assimilation_cleared={{ filters.assimilation_cleared }}{% endif %}" 
+                   class="page-btn">Previous</a>
+            {% endif %}
+
+            <span class="current-page">
+                Page {{ registrations.number }} of {{ registrations.paginator.num_pages }}
+            </span>
+
+            {% if registrations.has_next %}
+                <a href="?semester={{ filters.semester }}&page={{ registrations.next_page_number }}{% if filters.search %}&search={{ filters.search }}{% endif %}{% if filters.finance_cleared %}&finance_cleared={{ filters.finance_cleared }}{% endif %}{% if filters.academic_cleared %}&academic_cleared={{ filters.academic_cleared }}{% endif %}{% if filters.orientation_cleared %}&orientation_cleared={{ filters.orientation_cleared }}{% endif %}{% if filters.assimilation_cleared %}&assimilation_cleared={{ filters.assimilation_cleared }}{% endif %}" 
+                   class="page-btn">Next</a>
+                <a href="?semester={{ filters.semester }}&page={{ registrations.paginator.num_pages }}{% if filters.search %}&search={{ filters.search }}{% endif %}{% if filters.finance_cleared %}&finance_cleared={{ filters.finance_cleared }}{% endif %}{% if filters.academic_cleared %}&academic_cleared={{ filters.academic_cleared }}{% endif %}{% if filters.orientation_cleared %}&orientation_cleared={{ filters.orientation_cleared }}{% endif %}{% if filters.assimilation_cleared %}&assimilation_cleared={{ filters.assimilation_cleared }}{% endif %}" 
+                   class="page-btn">Last</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+<style>
+/* Filter Styles */
+.filters {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border: 1px solid #dee2e6;
+}
+
+.filters h3 {
+    color: #007bff;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.filter-group .required {
+    color: #dc3545;
+}
+
+.filter-group select,
+.filter-group input[type="text"] {
+    padding: 0.6rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: border-color 0.3s;
+}
+
+.filter-group select:focus,
+.filter-group input[type="text"]:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 0.6rem 1.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.btn-create,
+.btn-export {
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+}
+
+.btn-create {
+    background: #28a745;
+    color: white;
+}
+
+.btn-create:hover {
+    background: #218838;
+}
+
+.btn-export {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-export:hover {
+    background: #117a8b;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6c757d;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin: 0.5rem 0;
+}
+
+/* Statistics Dashboard */
+.stats-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.stat-card {
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.stat-card.total {
+    border-color: #007bff;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+}
+
+.stat-card.success {
+    border-color: #28a745;
+}
+
+.stat-card.finance {
+    border-color: #ffc107;
+}
+
+.stat-card.academic {
+    border-color: #17a2b8;
+}
+
+.stat-card.orientation {
+    border-color: #6f42c1;
+}
+
+.stat-card.assimilation {
+    border-color: #20c997;
+}
+
+.stat-card.warning {
+    border-color: #ff6b6b;
+    background: #fff3cd;
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card h4 {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-card.total h4 {
+    color: white;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #333;
+    margin: 0.5rem 0;
+}
+
+.stat-card.total .stat-value {
+    color: white;
+}
+
+.stat-percent {
+    font-size: 1rem;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.stat-note {
+    font-size: 0.85rem;
+    color: #856404;
+    margin-top: 0.5rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    margin-top: 0.75rem;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+/* Report Summary */
+.report-summary {
+    background: #e7f3ff;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+    margin-bottom: 2rem;
+}
+
+.report-summary h4 {
+    color: #007bff;
+    margin-bottom: 0.75rem;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.summary-item {
+    color: #495057;
+}
+
+.summary-item strong {
+    color: #212529;
+}
+
+/* Table Styles */
+.table-responsive {
+    overflow-x: auto;
+    margin: 2rem 0;
+}
+
+.clearance-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.clearance-table thead {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+}
+
+.clearance-table th {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.group-header {
+    text-align: center !important;
+    font-size: 0.95rem;
+}
+
+.finance-header {
+    background: rgba(255,193,7,0.2);
+}
+
+.academic-header {
+    background: rgba(23,162,184,0.2);
+}
+
+.sub-header {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.clearance-table td {
+    padding: 0.85rem 0.75rem;
+    border: 1px solid #dee2e6;
+    font-size: 0.9rem;
+}
+
+.clearance-table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.clearance-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.row-cleared {
+    background-color: #d4edda !important;
+}
+
+.row-cleared:hover {
+    background-color: #c3e6cb !important;
+}
+
+.row-pending {
+    background-color: #f8f9fa !important;
+}
+
+.row-no-record {
+    background-color: #fff3cd !important;
+}
+
+.row-no-record:hover {
+    background-color: #ffe69c !important;
+}
+
+.student-name {
+    font-weight: 600;
+    color: #212529;
+}
+
+.mono {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.status-cell {
+    vertical-align: middle;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.success {
+    background: #28a745;
+    color: white;
+}
+
+.status-badge.pending {
+    background: #ffc107;
+    color: #333;
+}
+
+.status-badge.no-record {
+    background: #ff6b6b;
+    color: white;
+}
+
+.badge-large {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.badge-success {
+    background: #28a745;
+    color: white;
+}
+
+.badge-warning {
+    background: #ffc107;
+    color: #333;
+}
+
+.badge-danger {
+    background: #dc3545;
+    color: white;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.pagination-info {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.page-btn {
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #007bff;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.page-btn:hover {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.current-page {
+    padding: 0.5rem 1rem;
+    background: #007bff;
+    color: white;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .stats-dashboard,
+    .report-summary {
+        page-break-inside: avoid;
+    }
+    
+    .clearance-table {
+        font-size: 0.75rem;
+    }
+    
+    .clearance-table th,
+    .clearance-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .row-cleared {
+        background-color: #d4edda !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .status-badge,
+    .badge-large {
+        border: 1px solid #333;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-dashboard {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .clearance-table {
+        font-size: 0.8rem;
+    }
+    
+    .clearance-table th,
+    .clearance-table td {
+        padding: 0.5rem 0.4rem;
+        white-space: nowrap;
+    }
+    
+    .pagination {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .pagination-controls {
+        justify-content: center;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-dashboard {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

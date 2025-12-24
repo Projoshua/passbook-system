@@ -1,0 +1,154 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Delete Internship - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Delete Internship Record</h1>
+        <a href="{% url 'pass_book:internship_detail' access_number.access_number %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Details
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Confirm Deletion
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">
+                            <i class="bi bi-exclamation-triangle"></i> Warning!
+                        </h5>
+                        <p>You are about to permanently delete this internship record. This action cannot be undone.</p>
+                    </div>
+
+                    <!-- Student Information -->
+                    <div class="mb-4">
+                        <h6 class="text-muted border-bottom pb-2">Student Information</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Name:</strong><br>
+                                <span class="fs-5">{{ student.name }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Access Number:</strong><br>
+                                <code class="fs-6">{{ access_number.access_number }}</code>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <strong>Email:</strong><br>
+                                {{ student.email|default:"Not provided" }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Academic Year:</strong><br>
+                                {{ access_number.academic_year.name }} - {{ access_number.semester.name }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Internship Information to be deleted -->
+                    <div class="mb-4">
+                        <h6 class="text-muted border-bottom pb-2">Internship Information to be Deleted</h6>
+                        <div class="bg-light p-3 rounded">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <strong>Status:</strong><br>
+                                    {% if internship.status == 'DONE' %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Not Done</span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <strong>Company:</strong><br>
+                                    {{ internship.company_name|default:"Not specified" }}
+                                </div>
+                            </div>
+                            
+                            {% if internship.start_date or internship.end_date %}
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <strong>Start Date:</strong><br>
+                                    {{ internship.start_date|default:"Not specified"|date:"F j, Y" }}
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <strong>End Date:</strong><br>
+                                    {{ internship.end_date|default:"Not specified"|date:"F j, Y" }}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if internship.supervisor_name or internship.supervisor_contact %}
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <strong>Supervisor:</strong><br>
+                                    {{ internship.supervisor_name|default:"Not specified" }}
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <strong>Supervisor Contact:</strong><br>
+                                    {{ internship.supervisor_contact|default:"Not specified" }}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Consequences -->
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-info-circle"></i> What will happen:</h6>
+                        <ul class="mb-0">
+                            <li>All internship information for this student will be permanently removed</li>
+                            <li>The student record and access number will remain intact</li>
+                            <li>This action cannot be undone</li>
+                            <li>You can create a new internship record for this student later if needed</li>
+                        </ul>
+                    </div>
+
+                    <!-- Confirmation Form -->
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex gap-3 justify-content-end">
+                            <a href="{% url 'pass_book:internship_detail' access_number.access_number %}" 
+                               class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Delete Permanently
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Alternative Actions -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6>Alternative Actions:</h6>
+                    <p class="text-muted mb-3">
+                        Instead of deleting, you might want to:
+                    </p>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'pass_book:internship_edit' access_number.access_number %}" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil"></i> Edit the Record
+                        </a>
+                        <a href="{% url 'pass_book:internship_detail' access_number.access_number %}" 
+                           class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-eye"></i> View Details Again
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

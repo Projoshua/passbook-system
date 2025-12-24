@@ -1,0 +1,29 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block content %}
+<h2>Generate Access Number for {{ student.name }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label>Student</label>
+        <input type="text" class="form-control" value="{{ student.name }}" disabled>
+    </div>
+    <div class="mb-3">
+        <label>Static Access Number</label>
+        <input type="text" class="form-control" value="{{ student.static_access_number }}" disabled>
+    </div>
+    {% for field in form %}
+    <div class="mb-3">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Generate</button>
+    <a href="{% url 'access_number_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}
+
+

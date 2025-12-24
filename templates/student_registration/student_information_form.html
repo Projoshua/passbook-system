@@ -1,0 +1,206 @@
+
+{% extends 'student_registration/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">{{ title }}</h4>
+            </div>
+            <!-- student_registration/student_information_form.html -->
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3>Static Access Number Components</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        {{ form.university_code.label_tag }}
+                        {{ form.university_code }}
+                        {% if form.university_code.errors %}
+                            <div class="text-danger">{{ form.university_code.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="form-group">
+                        {{ form.admission_year.label_tag }}
+                        {{ form.admission_year }}
+                        {% if form.admission_year.errors %}
+                            <div class="text-danger">{{ form.admission_year.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="form-group">
+                        {{ form.program_code.label_tag }}
+                        {{ form.program_code }}
+                        {% if form.program_code.errors %}
+                            <div class="text-danger">{{ form.program_code.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="form-group">
+                        {{ form.student_number.label_tag }}
+                        {{ form.student_number }}
+                        {% if form.student_number.errors %}
+                            <div class="text-danger">{{ form.student_number.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <strong>Access Number Format:</strong> 
+                <code>UNIV-YYYY-PROG-STUDENT</code> (e.g., SLAU-2025-909-00002)
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h3>Student Information</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        {{ form.name.label_tag }}
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="text-danger">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group">
+                        {{ form.program.label_tag }}
+                        {{ form.program }}
+                        {% if form.program.errors %}
+                            <div class="text-danger">{{ form.program.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        {{ form.program_faculty.label_tag }}
+                        {{ form.program_faculty }}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-group">
+                        {{ form.program_duration.label_tag }}
+                        {{ form.program_duration }}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-group">
+                        {{ form.expected_graduation_year.label_tag }}
+                        {{ form.expected_graduation_year }}
+                        {% if form.expected_graduation_year.errors %}
+                            <div class="text-danger">{{ form.expected_graduation_year.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Rest of your form fields -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        {{ form.nationality.label_tag }}
+                        {{ form.nationality }}
+                        {% if form.nationality.errors %}
+                            <div class="text-danger">{{ form.nationality.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group">
+                        {{ form.student_contact.label_tag }}
+                        {{ form.student_contact }}
+                        {% if form.student_contact.errors %}
+                            <div class="text-danger">{{ form.student_contact.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional fields as needed -->
+        </div>
+    </div>
+    
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Save Student</button>
+        <a href="{% url 'pass_book:student_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+            
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Add Bootstrap form validation classes
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    });
+
+    // Add Bootstrap classes to form fields
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.classList.add('form-control');
+        if (input.type === 'file') {
+            input.classList.add('form-control');
+        }
+        if (input.type === 'checkbox') {
+            input.classList.remove('form-control');
+            input.classList.add('form-check-input');
+        }
+    });
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fix all images with minio URLs
+    document.querySelectorAll('img[src*="https://minio:9000"]').forEach(img => {
+        img.src = img.src.replace('minio:9000', 'http://10.32.168.19:9000/django-storage');
+    });
+    
+    // Fix background images in inline styles
+    document.querySelectorAll('[style*="https://minio:9000"]').forEach(el => {
+        el.style.cssText = el.style.cssText.replace(/minio:9000/g, 'http://10.32.168.19:9000/django-storage');
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
+
+
