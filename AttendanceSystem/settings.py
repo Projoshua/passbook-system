@@ -32,7 +32,9 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '10.32.168.19',
     '192.168.1.13',      # Your local network IP
+    '192.168.43.57',     # Network IP accessible across internet
     '102.34.17.131',     # Your external/public IP
+    '41.210.146.137',    # Current public IP
 ]
 
 

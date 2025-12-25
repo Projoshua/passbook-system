@@ -106,6 +106,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models import Q
 from .forms import StaffCreationForm
 from .models import User
 
@@ -132,20 +133,39 @@ def create_staff_view(request):
 @login_required
 @user_passes_test(is_sysadmin)
 def staff_list_view(request):
-    """List all staff members"""
+    """List all system users with search and pagination"""
     staff_users = User.objects.filter(
         user_type__in=[
             'dean_of_students', 'finance_director', 'academic_registrar',
             'head_of_department', 'faculty_dean', 'medical_officer',
             'nche_officer', 'lecturer','student'
         ]
-    ).order_by('-date_joined')
+    )
     
-    paginator = Paginator(staff_users, 10)  # Show 10 staff per page
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        staff_users = staff_users.filter(
+            Q(username__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(phone_number__icontains=search_query) |
+            Q(user_type__icontains=search_query)
+        )
+    
+    staff_users = staff_users.order_by('-date_joined')
+    
+    paginator = Paginator(staff_users, 25)  # Show 25 users per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    return render(request, 'accounts/staff_list.html', {'page_obj': page_obj})
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+    }
+    
+    return render(request, 'accounts/staff_list.html', context)
 
 @login_required
 @user_passes_test(is_sysadmin)

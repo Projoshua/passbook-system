@@ -319,7 +319,7 @@ class Student(models.Model):
                     user_type='student',
                     first_name=self.name.split()[0] if self.name else '',
                     last_name=' '.join(self.name.split()[1:]) if len(self.name.split()) > 1 else '',
-                    email=f"{self.static_access_number}@student.example.com",  # Optional: set a placeholder email
+                    email=f"{self.static_access_number}@slau.ac.ug",  # Optional: set a placeholder email
                 )
                 
                 # Link the user to this student
@@ -533,7 +533,7 @@ class Student(models.Model):
                     user_type='student',
                     first_name=self.name.split()[0] if self.name else '',
                     last_name=' '.join(self.name.split()[1:]) if len(self.name.split()) > 1 else '',
-                    email=f"{self.static_access_number}@student.example.com",  # Optional: set a placeholder email
+                    email=f"{self.static_access_number}@slau.ac.ug",  # Optional: set a placeholder email
                 )
                 
                 # Link the user to this student

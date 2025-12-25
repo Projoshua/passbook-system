@@ -499,10 +499,7 @@ html, body {
                 </div>
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
@@ -538,7 +535,7 @@ html, body {
             </div>  
             <!--- shdskdf sldkf-->
             <a class="nav-link {% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}" href="{% url 'staff_list' %}">
-                <i class="fas fa-list"></i> <span>View Staff</span>
+                <i class="fas fa-users"></i> <span>System Users</span>
             </a>
             <!-- Note: Edit and Delete actions are typically accessed from the View Staff list page -->
             {% endif %}

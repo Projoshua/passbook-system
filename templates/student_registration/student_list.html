@@ -99,15 +99,11 @@
                                     </td>
                                     <td><strong>{{ student.registration_number }}</strong></td>
                                     <td>
-                                        <span class="badge badge-info">
-                                            {{ student.static_access_number }}
-                                        </span>
+                                        <strong style="color: #000;">{{ student.static_access_number|default:"N/A" }}</strong>
                                     </td>
                                     <td>{{ student.program.code }}</td>
                                     <td>
-                                        <span class="badge badge-secondary">
-                                            {{ student.get_session_display }}
-                                        </span>
+                                        <strong style="color: #000;">{{ student.get_session_display|default:"N/A" }}</strong>
                                     </td>
                                     <td>{{ student.admission_year }}</td>
                                     <td>{{ student.student_contact }}</td>

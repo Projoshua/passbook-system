@@ -785,7 +785,7 @@ def student_create(request):
                         user_type='student',
                         first_name=student.name.split()[0] if student.name else '',
                         last_name=' '.join(student.name.split()[1:]) if len(student.name.split()) > 1 else '',
-                        email=f'{student.static_access_number}@student.example.com'
+                        email=f'{student.static_access_number}@slau.ac.ug'
                     )
                     user.is_active = True
                     user.save()
